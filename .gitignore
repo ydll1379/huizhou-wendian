@@ -8,7 +8,10 @@ __pycache__/
 
 # 生成的数据（clone 后用 scripts/build_kb.py 一键重建）
 data/kb/
-eval/results/
+# 运行时用户数据（打卡/路线/报告）
+data/routes.json
+data/checkins.json
+data/reports/
 
 # 系统与临时文件
 .DS_Store

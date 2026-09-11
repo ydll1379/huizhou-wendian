@@ -16,6 +16,8 @@
     --muted: #8a7f6d;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  #chatPage { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+  #routePage { flex: 1; display: flex; flex-direction: column; min-height: 0; }
   body {
     font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
     background: var(--paper);
@@ -93,6 +95,69 @@
   .rec-item details { margin-top: 4px; font-size: 12px; color: var(--muted); }
   .rec-item summary { cursor: pointer; color: var(--accent); }
   .rec-error { color: var(--muted); font-size: 12.5px; line-height: 1.7; }
+  /* 红色筑梦页 */
+  .header-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .page-nav { display: flex; gap: 6px; }
+  .page-nav button {
+    border: 1px solid rgba(255,255,255,.6); background: transparent; color: #fff;
+    border-radius: 16px; padding: 5px 14px; font-size: 13px; cursor: pointer;
+  }
+  .page-nav button.active { background: #fff; color: var(--accent-deep); font-weight: 600; }
+  .route-main { max-width: 860px; margin: 0 auto; width: 100%; padding: 24px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; }
+  .route-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .route-controls select {
+    border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px;
+    font-size: 14px; background: var(--card); color: var(--ink);
+  }
+  .route-controls .gen {
+    border: none; background: var(--accent); color: #fff; border-radius: 10px;
+    padding: 9px 20px; font-size: 14px; cursor: pointer; font-weight: 600;
+  }
+  .route-controls .gen:disabled { opacity: .5; cursor: wait; }
+  .route-card {
+    background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--accent);
+    border-radius: 12px; padding: 14px 18px; cursor: pointer; font-size: 14px;
+  }
+  .route-card:hover { border-color: var(--accent); }
+  .route-card .n { font-weight: 700; color: var(--accent); font-size: 15px; }
+  .route-card .meta { color: var(--muted); font-size: 12.5px; margin-top: 4px; }
+  .route-card .s { color: var(--ink); font-size: 13px; margin-top: 6px; line-height: 1.6; }
+  #routeDetail { display: none; flex-direction: column; gap: 12px; }
+  .rd-head { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+  .rd-head h2 { color: var(--accent); font-size: 18px; margin-bottom: 6px; }
+  .rd-head .sum { color: var(--ink); font-size: 13.5px; line-height: 1.7; }
+  .rd-head .actions { margin-top: 10px; display: flex; gap: 10px; align-items: center; }
+  .rd-head .actions button {
+    border: none; background: var(--accent); color: #fff; border-radius: 10px;
+    padding: 8px 18px; font-size: 13px; cursor: pointer;
+  }
+  .rd-head .actions button:disabled { opacity: .5; cursor: wait; }
+  .progress { flex: 1; color: var(--muted); font-size: 13px; }
+  .stop {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 18px;
+  }
+  .stop .sn { display: flex; align-items: center; gap: 10px; }
+  .stop .sn .idx {
+    background: var(--accent); color: #fff; min-width: 26px; height: 26px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700;
+  }
+  .stop .sn b { font-size: 15px; color: var(--ink); }
+  .stop .sn .done-mark { color: var(--accent); font-weight: 700; display: none; }
+  .stop.done .done-mark { display: inline; }
+  .stop .why { color: var(--muted); font-size: 13px; margin: 6px 0 4px; line-height: 1.6; }
+  .stop .task { background: var(--accent-soft); border-radius: 8px; padding: 8px 12px; font-size: 13px; line-height: 1.6; }
+  .stop .task b { color: var(--accent); }
+  .stop .intro { color: var(--muted); font-size: 12px; margin-top: 6px; line-height: 1.6; }
+  .stop .ck { display: flex; gap: 8px; margin-top: 10px; }
+  .stop .ck input { flex: 1; border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; font-size: 13px; }
+  .stop .ck button { border: none; background: var(--accent); color: #fff; border-radius: 8px; padding: 0 16px; font-size: 13px; cursor: pointer; }
+  .leg { align-self: center; color: var(--muted); font-size: 12.5px; padding: 0 8px; margin: -6px 0; }
+  .overlay { position: fixed; inset: 0; background: rgba(43,33,24,.55); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 24px; }
+  .report-box { background: var(--paper); border-radius: 14px; width: 100%; max-width: 720px; max-height: 85vh; display: flex; flex-direction: column; }
+  .report-head { display: flex; gap: 8px; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--line); color: var(--accent); font-weight: 700; }
+  .report-head button { border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 4px 12px; font-size: 12.5px; cursor: pointer; }
+  .report-head button.danger { border: none; background: var(--accent); color: #fff; }
+  #reportText { overflow-y: auto; padding: 18px 22px; white-space: pre-wrap; font-size: 13.5px; line-height: 1.9; font-family: inherit; }
   footer {
     border-top: 1px solid var(--line); background: var(--card);
     padding: 14px 24px; display: flex; gap: 12px; max-width: 860px; margin: 0 auto; width: 100%;
@@ -117,13 +182,20 @@
     <h1>徽州问典</h1>
     <span>江淮红色文化智能传承与乡村文旅赋能平台 · 合肥 芜湖 阜阳 淮南</span>
   </div>
-  <div class="style-switch" id="styleSwitch">
-    <button data-style="guide" class="active">导游版</button>
-    <button data-style="scholar">学者版</button>
-    <button data-style="child">儿童版</button>
+  <div class="header-right">
+    <div class="style-switch" id="styleSwitch">
+      <button data-style="guide" class="active">导游版</button>
+      <button data-style="scholar">学者版</button>
+      <button data-style="child">青少年版</button>
+    </div>
+    <nav class="page-nav">
+      <button id="navChat" class="active">💬 文化问答</button>
+      <button id="navRoute">🚩 红色筑梦</button>
+    </nav>
   </div>
 </header>
 
+<div id="chatPage">
 <main id="chat">
   <div class="hint">传承红色基因，让每一次提问都有出处 —— 试试「渡江战役发生在哪里？」「大通万人坑见证了什么？」</div>
   <div class="chips" id="chips"></div>
@@ -133,6 +205,35 @@
   <textarea id="input" rows="1" placeholder="输入你的问题，回车发送…"></textarea>
   <button id="send">发送</button>
 </footer>
+</div>
+
+<div id="routePage" style="display:none">
+  <main class="route-main">
+    <div class="route-controls">
+      <select id="citySel"></select>
+      <select id="daysSel">
+        <option value="1">1 天</option>
+        <option value="2">2 天</option>
+      </select>
+      <button id="genRoute" class="gen">🚩 生成研学路线</button>
+    </div>
+    <div id="routeDetail"></div>
+    <div id="routeList"></div>
+  </main>
+</div>
+
+<div id="reportOverlay" class="overlay" style="display:none">
+  <div class="report-box">
+    <div class="report-head">
+      📋 青年红色筑梦之旅 · 实践报告
+      <span style="flex:1"></span>
+      <button id="copyReport">复制</button>
+      <button id="dlReport">下载 .md</button>
+      <button id="closeReport" class="danger">关闭</button>
+    </div>
+    <div id="reportText"></div>
+  </div>
+</div>
 
 <script>
 const chat = document.getElementById("chat");
@@ -172,7 +273,7 @@ function renderSources(sources) {
 }
 
 function escapeHtml(s) {
-  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
 async function ask() {
@@ -290,6 +391,171 @@ async function loadSpots() {
     });
   } catch (e) { /* 静默 */ }
 }
+/* ===== 红色筑梦之旅：路线 / 打卡 / 实践报告 ===== */
+const $id = (id) => document.getElementById(id);
+
+function showPage(which) {
+  const isChat = which === "chat";
+  $id("chatPage").style.display = isChat ? "flex" : "none";
+  $id("routePage").style.display = isChat ? "none" : "flex";
+  $id("navChat").classList.toggle("active", isChat);
+  $id("navRoute").classList.toggle("active", !isChat);
+  $id("styleSwitch").style.visibility = isChat ? "visible" : "hidden";
+  if (!isChat) { loadCities(); loadRouteList(); }
+}
+$id("navChat").addEventListener("click", () => showPage("chat"));
+$id("navRoute").addEventListener("click", () => showPage("route"));
+
+async function loadCities() {
+  const sel = $id("citySel");
+  if (sel.options.length) return;
+  try {
+    const cities = await (await fetch("/api/cities")).json();
+    cities.forEach(c => {
+      const o = document.createElement("option");
+      o.value = c.city;
+      o.textContent = `${c.city}（红色景点 ${c.red_count} 处）`;
+      sel.appendChild(o);
+    });
+  } catch (e) { /* 静默 */ }
+}
+
+$id("genRoute").addEventListener("click", async () => {
+  const city = $id("citySel").value;
+  if (!city) return;
+  const btn = $id("genRoute");
+  btn.disabled = true; btn.textContent = "正在规划路线…";
+  try {
+    const d = await (await fetch("/api/routes/generate", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ city, days: +$id("daysSel").value })
+    })).json();
+    if (!d.ok) { alert(d.error); return; }
+    await loadRouteList();
+    openRoute(d.route.id);
+  } finally { btn.disabled = false; btn.textContent = "🚩 生成研学路线"; }
+});
+
+async function loadRouteList() {
+  const d = await (await fetch("/api/routes")).json();
+  const box = $id("routeList");
+  box.innerHTML = d.routes.length
+    ? `<div class="hint" style="align-self:flex-start">我的研学路线（点击进入打卡）：</div>`
+    : `<div class="hint">还没有路线 —— 选择城市后点击「生成研学路线」。</div>`;
+  d.routes.forEach(r => {
+    const el = document.createElement("div");
+    el.className = "route-card";
+    el.innerHTML = `<div class="n">🚩 ${escapeHtml(r.name)}</div>
+      <div class="meta">${escapeHtml(r.city)} · ${r.days} 天 · ${r.stop_count} 站 · 生成于 ${escapeHtml(r.created)}</div>
+      <div class="s">${escapeHtml(r.summary)}</div>`;
+    el.addEventListener("click", () => openRoute(r.id));
+    box.appendChild(el);
+  });
+}
+
+let currentRoute = null;
+
+async function openRoute(id) {
+  const d = await (await fetch(`/api/routes/${id}`)).json();
+  if (!d.ok) { alert(d.error); return; }
+  currentRoute = d.route;
+  renderRoute(d.route, d.checkins || {});
+  $id("routeDetail").style.display = "flex";
+  $id("routeDetail").scrollIntoView({ behavior: "smooth" });
+}
+
+function fmtLeg(l) {
+  if (!l || !l.mode) return "";
+  const mode = l.mode === "walking" ? "步行" : "驾车";
+  const dist = l.distance_m >= 1000 ? (l.distance_m / 1000).toFixed(1) + " 公里" : l.distance_m + " 米";
+  const dur = l.duration_s ? `，约 ${Math.max(1, Math.round(l.duration_s / 60))} 分钟` : "";
+  return `↓ ${mode} ${dist}${dur} ↓`;
+}
+
+function renderRoute(r, ck) {
+  const doneCount = r.stops.filter(s => ck[s.name] && ck[s.name].done).length;
+  const parts = [`<div class="rd-head">
+      <h2>🚩 ${escapeHtml(r.name)}</h2>
+      <div class="sum">${escapeHtml(r.summary)}</div>
+      <div class="actions">
+        <span class="progress">打卡进度：${doneCount}/${r.stops.length}</span>
+        <button id="genReportBtn">📋 生成实践报告</button>
+        <button id="backListBtn">← 返回路线列表</button>
+      </div>
+    </div>`];
+  r.stops.forEach((s, i) => {
+    const c = ck[s.name] || {};
+    parts.push(`<div class="stop ${c.done ? "done" : ""}" data-spot="${escapeHtml(s.name)}">
+      <div class="sn"><span class="idx">${i + 1}</span><b>${escapeHtml(s.name)}</b>
+        <span class="done-mark">✔ 已打卡</span></div>
+      <div class="why">入选理由：${escapeHtml(s.why)}</div>
+      <div class="task"><b>研学任务</b>：${escapeHtml(s.task)}</div>
+      ${s.intro_text ? `<div class="intro">文化背景（出处《${escapeHtml(s.intro_doc)}》）：${escapeHtml(s.intro_text)}…</div>` : ""}
+      <div class="ck">
+        <input placeholder="写下你的现场心得…" value="${escapeHtml(c.note || "")}">
+        <button data-done="${c.done ? "0" : "1"}">${c.done ? "取消打卡" : "完成打卡"}</button>
+      </div>
+    </div>`);
+    if (i < r.stops.length - 1) parts.push(`<div class="leg">${fmtLeg(r.legs[i])}</div>`);
+  });
+  const det = $id("routeDetail");
+  det.innerHTML = parts.join("");
+  det.querySelectorAll(".stop").forEach(stopEl => {
+    const spot = stopEl.dataset.spot;
+    const btn = stopEl.querySelector(".ck button");
+    const input = stopEl.querySelector(".ck input");
+    btn.addEventListener("click", async () => {
+      const done = btn.dataset.done === "1";
+      const d = await (await fetch("/api/checkin", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ route_id: currentRoute.id, spot, done, note: input.value.trim() })
+      })).json();
+      if (!d.ok) { alert(d.error); return; }
+      openRoute(currentRoute.id);
+    });
+  });
+  $id("backListBtn").addEventListener("click", () => {
+    det.style.display = "none";
+    loadRouteList();
+  });
+  $id("genReportBtn").addEventListener("click", genReport);
+}
+
+async function genReport() {
+  const btn = $id("genReportBtn");
+  btn.disabled = true; btn.textContent = "正在撰写报告…";
+  try {
+    const d = await (await fetch("/api/report", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ route_id: currentRoute.id })
+    })).json();
+    if (!d.ok) { alert(d.error); return; }
+    $id("reportText").innerHTML = mdLite(d.report);
+    $id("reportOverlay").style.display = "flex";
+  } finally { btn.disabled = false; btn.textContent = "📋 生成实践报告"; }
+}
+
+function mdLite(md) {
+  return escapeHtml(md)
+    .replace(/^# (.+)$/gm, "\n<b>$1</b>\n")
+    .replace(/^## (.+)$/gm, "\n<b>$1</b>\n")
+    .replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+}
+
+$id("closeReport").addEventListener("click", () => $id("reportOverlay").style.display = "none");
+$id("copyReport").addEventListener("click", () => {
+  navigator.clipboard.writeText($id("reportText").innerText);
+  $id("copyReport").textContent = "已复制 ✓";
+  setTimeout(() => $id("copyReport").textContent = "复制", 1500);
+});
+$id("dlReport").addEventListener("click", () => {
+  const blob = new Blob([$id("reportText").innerText], { type: "text/markdown;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `红色筑梦实践报告-${(currentRoute && currentRoute.name) || "route"}.md`;
+  a.click();
+});
+
 loadSpots();
 
 send.addEventListener("click", ask);

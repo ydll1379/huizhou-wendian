@@ -50,6 +50,15 @@ def hit_at_k(question: str, expect: list[str], hits: list[dict], k: int) -> bool
     return any(e in joined for e in expect)
 
 
+def mrr(question: str, expect: list[str], hits: list[dict], k: int) -> float:
+    """首个命中结果排名的倒数（0 = 未命中），对排序质量更敏感"""
+    for rank, h in enumerate(hits[:k], start=1):
+        joined = h["text"] + h["doc"]
+        if any(e in joined for e in expect):
+            return 1.0 / rank
+    return 0.0
+
+
 def run(mode: str, questions: list[dict], store: VectorStore, embedder: Embedder):
     r_cfg = dict(cfg)
     r_cfg["retrieval"] = {**cfg["retrieval"], "baseline": (mode == "baseline")}
@@ -61,6 +70,7 @@ def run(mode: str, questions: list[dict], store: VectorStore, embedder: Embedder
             "question": q["question"],
             "hit@5": hit_at_k(q["question"], q["expect"], hits, 5),
             "hit@10": hit_at_k(q["question"], q["expect"], hits, 10),
+            "mrr": mrr(q["question"], q["expect"], hits, cfg["retrieval"]["top_k"]),
         })
     return rows
 
@@ -92,13 +102,18 @@ def main():
     o5 = sum(r["hit@5"] for r in opt) / len(opt)
     b10 = sum(r["hit@10"] for r in base) / len(base)
     o10 = sum(r["hit@10"] for r in opt) / len(opt)
+    bmrr = sum(r["mrr"] for r in base) / len(base)
+    omrr = sum(r["mrr"] for r in opt) / len(opt)
 
-    report = f"""# 庐州问典 · 检索优化对比实验（{len(questions)} 题，耗时 {time.time()-t0:.0f}s）
+    report = f"""# 徽州问典 · 红色文化检索优化对比实验（{len(questions)} 题，耗时 {time.time()-t0:.0f}s）
 
 | 指标 | 基线（纯向量） | 优化（词表扩展+混合检索+Rerank） | 提升 |
 |---|---|---|---|
 | Hit@5 | {b5:.1%} | {o5:.1%} | {o5-b5:+.1%} |
 | Hit@10 | {b10:.1%} | {o10:.1%} | {o10-b10:+.1%} |
+| MRR | {bmrr:.3f} | {omrr:.3f} | {omrr-bmrr:+.3f} |
+
+> MRR（平均倒数排名）衡量首个正确结果的排名位置，对 Reranker 的排序增益更敏感。
 
 ## 逐题明细
 | 问题 | 基线 Hit@5 | 优化 Hit@5 |

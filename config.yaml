@@ -52,6 +52,8 @@ domain_terms:
   芜湖: [鸠兹]
   小甸集特支: [小甸集, 安徽第一面党旗]
   新四军: [铁军]
+  金寨: [红军摇篮, 将军县]
+  小岗村: [大包干, 红手印]
 
 # 高德地图 LBS（Web服务 key，lbs.amap.com 免费申请）
 amap:
@@ -86,6 +88,9 @@ spots:
   三里沟抗日纪念园:    { city: 淮南, aliases: [三里沟], tag: red }
   瓦埠暴动旧址:        { city: 淮南, aliases: [瓦埠暴动], tag: red }
   廖家湾革命纪念馆:    { city: 淮南, aliases: [廖家湾], tag: red }
+  金寨红军广场:        { city: 六安, aliases: [金寨, 红军广场, 金寨县革命博物馆, 金寨革命烈士陵园, 将军县], tag: red }
+  小岗村:              { city: 滁州, aliases: [大包干纪念馆, 小岗, 沈浩], tag: red }
+  云岭新四军军部旧址:  { city: 宣城, aliases: [新四军军部旧址, 云岭, 泾县新四军], tag: red }
   寿县孔庙:        { city: 淮南, aliases: [寿州孔庙] }
   淮南王刘安家族墓地: { city: 淮南, aliases: [淮南王墓, 刘安墓, 淮南王家族墓地] }
   寿县清真寺:      { city: 淮南, aliases: [寿州清真寺] }

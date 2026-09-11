@@ -14,6 +14,7 @@ from core import ROOT, load_config
 from core.amap import AmapUnavailable
 from core.pipeline import RAGPipeline
 from core.recommender import Recommender, identify_spots
+from core.route_planner import RouteError, RoutePlanner
 
 cfg = load_config()
 app = FastAPI(title="庐州问典")
@@ -21,7 +22,8 @@ app = FastAPI(title="庐州问典")
 # 知识库在后台线程懒加载，避免启动时卡住
 _pipeline: RAGPipeline | None = None
 _recommender: Recommender | None = None
-_pipeline_lock = threading.RLock()  # 可重入：get_recommender 内部会调用 get_pipeline
+_planner: RoutePlanner | None = None
+_pipeline_lock = threading.RLock()
 
 
 def get_pipeline() -> RAGPipeline:
@@ -38,6 +40,14 @@ def get_recommender() -> Recommender:
         if _recommender is None:
             _recommender = Recommender(cfg, get_pipeline())
     return _recommender
+
+
+def get_planner() -> RoutePlanner:
+    global _planner
+    with _pipeline_lock:
+        if _planner is None:
+            _planner = RoutePlanner(cfg, get_pipeline(), ROOT)
+    return _planner
 
 
 class ChatRequest(BaseModel):
@@ -58,6 +68,22 @@ class RecommendRequest(BaseModel):
     spot: str
     kind: str = "food"    # food / hotel
     limit: Optional[int] = None
+
+
+class RouteGenRequest(BaseModel):
+    city: str
+    days: int = 1
+
+
+class CheckinRequest(BaseModel):
+    route_id: str
+    spot: str
+    done: bool
+    note: str = ""
+
+
+class ReportRequest(BaseModel):
+    route_id: str
 
 
 @app.get("/api/health")
@@ -98,6 +124,63 @@ def recommend(req: RecommendRequest):
         return {"ok": False, "error": str(e)}
     except Exception as e:
         return {"ok": False, "error": f"推荐服务出错：{e}"}
+
+
+# ---------- 青年红色筑梦之旅：研学路线 / 打卡 / 实践报告 ----------
+
+@app.get("/api/cities")
+def cities():
+    """有可编排路线景点的城市（红色景点数>=2 的优先）"""
+    counter: dict[str, int] = {}
+    for m in cfg.get("spots", {}).values():
+        c = m.get("city", "")
+        counter[c] = counter.get(c, 0) + (1 if m.get("tag") == "red" else 0)
+    return [{"city": c, "red_count": n} for c, n in sorted(counter.items(), key=lambda x: -x[1]) if n > 0]
+
+
+@app.post("/api/routes/generate")
+def routes_generate(req: RouteGenRequest):
+    try:
+        route = get_planner().generate(req.city, max(1, min(req.days, 3)))
+        return {"ok": True, "route": route}
+    except (AmapUnavailable, RouteError, RuntimeError) as e:
+        return {"ok": False, "error": str(e)}
+    except Exception as e:
+        return {"ok": False, "error": f"路线生成出错：{e}"}
+
+
+@app.get("/api/routes")
+def routes_list():
+    return {"ok": True, "routes": get_planner().list_routes()}
+
+
+@app.get("/api/routes/{route_id}")
+def routes_get(route_id: str):
+    try:
+        route = get_planner().get_route(route_id)
+        return {"ok": True, "route": route, "checkins": get_planner().get_checkins(route_id)}
+    except RouteError as e:
+        return {"ok": False, "error": str(e)}
+
+
+@app.post("/api/checkin")
+def checkin(req: CheckinRequest):
+    try:
+        state = get_planner().checkin(req.route_id, req.spot, req.done, req.note)
+        return {"ok": True, "checkin": state}
+    except RouteError as e:
+        return {"ok": False, "error": str(e)}
+
+
+@app.post("/api/report")
+def report(req: ReportRequest):
+    try:
+        text = get_planner().gen_report(req.route_id)
+        return {"ok": True, "report": text}
+    except (RouteError, RuntimeError) as e:
+        return {"ok": False, "error": str(e)}
+    except Exception as e:
+        return {"ok": False, "error": f"报告生成出错：{e}"}
 
 
 @app.get("/")
