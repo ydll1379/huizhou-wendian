@@ -1,0 +1,14 @@
+[
+  {"question": "包公祠门前的石狮子为什么在笑？", "expect": ["包公祠", "石狮子"], "topic": "包公文化", "difficulty": "中"},
+  {"question": "粉蜡笺是什么？有什么工艺特点？", "expect": ["粉蜡笺"], "topic": "非遗", "difficulty": "中"},
+  {"question": "三河古镇为什么叫三河？", "expect": ["三河古镇", "三河"], "topic": "古镇", "difficulty": "中"},
+  {"question": "庐剧以前叫什么名字？有什么艺术特点？", "expect": ["庐剧", "倒七戏"], "topic": "非遗", "difficulty": "中"},
+  {"question": "巢湖民歌是什么？", "expect": ["巢湖民歌"], "topic": "非遗", "difficulty": "易"},
+  {"question": "合肥在历史上叫什么名字？", "expect": ["庐州", "庐阳"], "topic": "地名沿革", "difficulty": "易"},
+  {"question": "逍遥津公园与三国有什么关系？", "expect": ["逍遥津", "张辽"], "topic": "三国", "difficulty": "中"},
+  {"question": "大邵洋蛇灯是什么项目？", "expect": ["大邵洋蛇灯", "蛇灯"], "topic": "非遗", "difficulty": "难"},
+  {"question": "渡江战役纪念馆纪念的是什么历史事件？", "expect": ["渡江战役"], "topic": "红色文化", "difficulty": "易"},
+  {"question": "李鸿章故居在哪里？他是什么人？", "expect": ["李鸿章"], "topic": "名人", "difficulty": "中"},
+  {"question": "包拯是哪里人？为什么被称为包青天？", "expect": ["包拯", "合肥"], "topic": "包公文化", "difficulty": "中"},
+  {"question": "粉蜡笺加工技艺是哪里的国家级非遗？", "expect": ["粉蜡笺", "合肥", "巢湖"], "topic": "非遗", "difficulty": "难"}
+]

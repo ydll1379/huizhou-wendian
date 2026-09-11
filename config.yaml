@@ -1,0 +1,104 @@
+# 徽州问典 —— 全局配置
+# 所有路径均为相对项目根目录
+
+llm:
+  provider: deepseek
+  api_key_env: DEEPSEEK_API_KEY   # 从环境变量读取 key（见 .env.example）
+  base_url: https://api.deepseek.com
+  model: deepseek-chat
+  temperature: 0.3
+  max_tokens: 1024
+
+embedding:
+  model: BAAI/bge-m3               # 中文 embedding，本地运行
+  device: cpu                      # mac 可尝试 mps，不稳定则用 cpu
+  batch_size: 16
+
+reranker:
+  model: BAAI/bge-reranker-v2-m3   # 重排序模型
+  device: cpu
+  trust_remote_code: true
+  top_k: 5                         # 重排后返回给 LLM 的条数
+
+retrieval:
+  top_k: 12                        # 召回阶段取回条数（混合检索融合后）
+  baseline: false                  # true = 纯向量检索（做基线对比用），false = 混合检索+词表扩展
+  bm25_weight: 0.5
+  dense_weight: 0.5
+  refuse_threshold: 0.35           # 最高相关度低于该值则拒答（防幻觉）
+
+chunking:
+  max_chars: 500
+  overlap: 80
+
+data:
+  raw_dir: data/raw                 # 原始文档目录（支持 .txt/.md/.html/.pdf）
+  kb_dir: data/kb                   # 向量库持久化目录
+
+# 领域词表：别名 -> 规范名（检索时做查询扩展，见 core/retriever.py）
+domain_terms:
+  合肥: [庐州, 庐阳, 庐江县, 霸都]
+  包拯: [包公, 包希仁, 包龙图, 包青天, 包孝肃]
+  逍遥津: [逍遥津公园, 张辽, 三国古战场]
+  巢湖民歌: [巢湖, 大邵洋蛇灯]
+  粉蜡笺: [粉蜡笺纸, 笺纸, 加工技艺]
+  庐剧: [庐州戏, 倒七戏]
+  三河古镇: [三河, 三河镇]
+  李鸿章: [李中堂, 李文忠]
+
+# 四城古称/别称（补充检索扩展）
+  阜阳: [颍州]
+  淮南: [寿州, 寿春]
+  芜湖: [鸠兹]
+
+# 高德地图 LBS（Web服务 key，lbs.amap.com 免费申请）
+amap:
+  api_key_env: AMAP_API_KEY
+  radius: 3000        # 周边搜索半径（米）
+  food_limit: 6       # 美食推荐条数
+  hotel_limit: 4      # 住宿推荐条数
+  types:
+    food: "050000"    # 餐饮服务
+    hotel: "100000"   # 住宿服务
+
+# 景点注册表：LBS 推荐锚点（知识库中已收录的景区/文保单位）
+# aliases 用于从用户问题中识别景点（identify_spots）
+spots:
+  逍遥津公园:      { city: 合肥, aliases: [逍遥津, 逍遥阁, 飞骑桥, 张辽] }
+  包公园:          { city: 合肥, aliases: [包公祠, 包公墓, 清风阁, 包河, 浮庄, 包公文化园] }
+  三河古镇:        { city: 合肥, aliases: [三河] }
+  长临河古镇:      { city: 合肥, aliases: [长临河, 长临古街] }
+  庐州府城隍庙:    { city: 合肥, aliases: [城隍庙] }
+  紫蓬山:          { city: 合肥, aliases: [西庐寺] }
+  渡江战役纪念馆:  { city: 合肥, aliases: [渡江纪念馆] }
+  李鸿章故居:      { city: 合肥, aliases: [李府, 李鸿章享堂, 李府春秋] }
+  环城公园:        { city: 合肥, aliases: [翡翠项链] }
+  太和文庙:        { city: 阜阳, aliases: [] }
+  阜阳奎星楼:      { city: 阜阳, aliases: [奎星楼, 拐角楼, 三蓬塔] }
+  阜阳文峰塔:      { city: 阜阳, aliases: [文峰塔] }
+  寿州窑遗址:      { city: 淮南, aliases: [寿州窑, 寿县窑, 上窑镇] }
+  侵华日军淮南罪证遗址: { city: 淮南, aliases: [大通万人坑, 万人坑] }
+  寿县孔庙:        { city: 淮南, aliases: [寿州孔庙] }
+  淮南王刘安家族墓地: { city: 淮南, aliases: [淮南王墓, 刘安墓, 淮南王家族墓地] }
+  寿县清真寺:      { city: 淮南, aliases: [寿州清真寺] }
+  寿县古城墙:      { city: 淮南, aliases: [寿县城墙] }
+  寿春城遗址:      { city: 淮南, aliases: [寿春城] }
+  安丰塘:          { city: 淮南, aliases: [芍陂] }
+  芜湖古城:        { city: 芜湖, aliases: [] }
+  鸠兹广场:        { city: 芜湖, aliases: [鸠兹] }
+  滨江公园:        { city: 芜湖, aliases: [老芜湖海关, 中江塔, 范罗山] }
+  芜湖老船厂:      { city: 芜湖, aliases: [老船厂, 百年老船厂] }
+  板子矶:          { city: 芜湖, aliases: [] }
+
+# 多风格讲解 Prompt 模板（{contexts} 为带编号的资料，{question} 为用户问题）
+styles:
+  guide: |
+    你是"庐州问典"的金牌导游，正在带游客游览合肥。请用生动、口语化、
+    带讲故事感的语言回答游客的问题，可以穿插历史典故和小细节，让听众
+    仿佛身临其境。控制在 200~400 字。
+  scholar: |
+    你是研究合肥地方文化的学者。请用严谨、考据的语言回答，术语准确，
+    逻辑清晰，并严格依据所提供的文献资料，不臆造史实。控制在 300~500 字。
+  child: |
+    你是给小学生讲故事的文化讲解员。请用简单、有趣、充满画面感的语言
+    回答，多用比喻和短句，让小朋友能听懂、感兴趣。控制在 150~300 字。

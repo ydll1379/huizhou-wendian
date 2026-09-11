@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>徽州问典 · 地方文化智能讲解</title>
+<style>
+  :root {
+    --ink: #2b2118;
+    --paper: #faf6ee;
+    --card: #fffdf7;
+    --accent: #8c2f1f;
+    --accent-soft: #f3e4dc;
+    --line: #e5dccb;
+    --muted: #8a7f6d;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  header {
+    padding: 14px 24px;
+    background: var(--card);
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .brand { display: flex; align-items: baseline; gap: 10px; }
+  .brand h1 { font-size: 20px; letter-spacing: 2px; color: var(--accent); }
+  .brand span { font-size: 12px; color: var(--muted); }
+  .style-switch { display: flex; background: var(--accent-soft); border-radius: 20px; padding: 3px; }
+  .style-switch button {
+    border: none; background: transparent; padding: 6px 16px;
+    border-radius: 18px; font-size: 13px; cursor: pointer; color: var(--ink);
+  }
+  .style-switch button.active { background: var(--accent); color: #fff; }
+  main { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 16px; max-width: 860px; margin: 0 auto; width: 100%; }
+  .msg { max-width: 78%; padding: 12px 16px; border-radius: 12px; line-height: 1.75; font-size: 14.5px; white-space: pre-wrap; }
+  .msg.user { align-self: flex-end; background: var(--accent); color: #fff; border-bottom-right-radius: 4px; }
+  .msg.bot { align-self: flex-start; background: var(--card); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+  .msg.bot.refused { opacity: .85; }
+  .cite { color: var(--accent); font-size: 12px; vertical-align: super; cursor: pointer; text-decoration: none; font-weight: 600; }
+  .sources { align-self: flex-start; width: 78%; display: flex; flex-direction: column; gap: 8px; }
+  .src {
+    background: var(--card); border: 1px dashed var(--line); border-radius: 8px;
+    padding: 10px 12px; font-size: 12.5px; cursor: pointer;
+  }
+  .src .t { color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+  .src .s { color: var(--muted); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .src.open .s { -webkit-line-clamp: unset; display: block; }
+  .hint { align-self: center; color: var(--muted); font-size: 12.5px; margin-top: 8px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px; }
+  .chips button {
+    border: 1px solid var(--line); background: var(--card); color: var(--ink);
+    border-radius: 16px; padding: 5px 14px; font-size: 12.5px; cursor: pointer;
+  }
+  .chips button:hover { border-color: var(--accent); color: var(--accent); }
+  /* 周边推荐面板 */
+  .rec-card {
+    align-self: flex-start; width: 78%; background: var(--card);
+    border: 1px solid var(--line); border-radius: 12px; overflow: hidden; font-size: 13px;
+  }
+  .rec-head {
+    display: flex; align-items: center; gap: 8px; padding: 10px 14px;
+    background: var(--accent-soft); font-weight: 600; color: var(--accent);
+  }
+  .rec-head .btns { margin-left: auto; display: flex; gap: 6px; }
+  .rec-head button {
+    border: 1px solid var(--accent); background: #fff; color: var(--accent);
+    border-radius: 14px; padding: 3px 12px; font-size: 12px; cursor: pointer;
+  }
+  .rec-head button.active { background: var(--accent); color: #fff; }
+  .rec-body { padding: 10px 14px; display: flex; flex-direction: column; gap: 8px; }
+  .rec-map { width: 100%; border-radius: 8px; border: 1px solid var(--line); display: block; }
+  .rec-intro { color: var(--muted); font-size: 12.5px; line-height: 1.7; }
+  .rec-intro b { color: var(--ink); }
+  .rec-item { border-top: 1px dashed var(--line); padding-top: 8px; }
+  .rec-item .n { color: var(--ink); font-weight: 600; text-decoration: none; }
+  .rec-item .n:hover { color: var(--accent); }
+  .rec-item .d { color: var(--accent); font-size: 12px; margin-left: 8px; }
+  .rec-item .a { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .rec-item details { margin-top: 4px; font-size: 12px; color: var(--muted); }
+  .rec-item summary { cursor: pointer; color: var(--accent); }
+  .rec-error { color: var(--muted); font-size: 12.5px; line-height: 1.7; }
+  footer {
+    border-top: 1px solid var(--line); background: var(--card);
+    padding: 14px 24px; display: flex; gap: 12px; max-width: 860px; margin: 0 auto; width: 100%;
+  }
+  #input {
+    flex: 1; border: 1px solid var(--line); border-radius: 22px; padding: 10px 18px;
+    font-size: 14.5px; outline: none; background: var(--paper); resize: none; max-height: 120px;
+  }
+  #input:focus { border-color: var(--accent); }
+  #send {
+    border: none; background: var(--accent); color: #fff; border-radius: 22px;
+    padding: 0 26px; font-size: 14.5px; cursor: pointer;
+  }
+  #send:disabled { opacity: .5; cursor: not-allowed; }
+  .loading::after { content: "…"; animation: dots 1.2s infinite; }
+  @keyframes dots { 0% { content: "…"; } 33% { content: "⋯"; } 66% { content: "⋮"; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <h1>徽州问典</h1>
+    <span>合肥 · 芜湖 · 阜阳 · 淮南 地方文化智能讲解与传承平台</span>
+  </div>
+  <div class="style-switch" id="styleSwitch">
+    <button data-style="guide" class="active">导游版</button>
+    <button data-style="scholar">学者版</button>
+    <button data-style="child">儿童版</button>
+  </div>
+</header>
+
+<main id="chat">
+  <div class="hint">问一句，听懂庐州故事 —— 试试「包公祠门前的石狮子为什么在笑？」「粉蜡笺是什么？」</div>
+  <div class="chips" id="chips"></div>
+</main>
+
+<footer>
+  <textarea id="input" rows="1" placeholder="输入你的问题，回车发送…"></textarea>
+  <button id="send">发送</button>
+</footer>
+
+<script>
+const chat = document.getElementById("chat");
+const input = document.getElementById("input");
+const send = document.getElementById("send");
+let style = "guide";
+
+document.getElementById("styleSwitch").addEventListener("click", e => {
+  const btn = e.target.closest("button");
+  if (!btn) return;
+  style = btn.dataset.style;
+  document.querySelectorAll("#styleSwitch button").forEach(b => b.classList.toggle("active", b === btn));
+});
+
+function addMsg(text, cls) {
+  const div = document.createElement("div");
+  div.className = "msg " + cls;
+  div.textContent = text;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+  return div;
+}
+
+function renderSources(sources) {
+  if (!sources || !sources.length) return;
+  const box = document.createElement("div");
+  box.className = "sources";
+  sources.forEach(s => {
+    const el = document.createElement("div");
+    el.className = "src";
+    el.innerHTML = `<div class="t">[${s.cite_id}] ${escapeHtml(s.doc)} · 相关度 ${(s.dense_score ?? s.score ?? 0).toFixed(2)}</div><div class="s">${escapeHtml(s.text)}</div>`;
+    el.addEventListener("click", () => el.classList.toggle("open"));
+    box.appendChild(el);
+  });
+  chat.appendChild(box);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+async function ask() {
+  const q = input.value.trim();
+  if (!q || send.disabled) return;
+  input.value = "";
+  addMsg(q, "user");
+  const loading = addMsg("正在查阅庐州典籍", "bot loading");
+  send.disabled = true;
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question: q, style })
+    });
+    const data = await res.json();
+    loading.classList.remove("loading");
+    loading.textContent = data.answer;
+    // 把 [n] 引用转成可点击角标
+    loading.innerHTML = data.answer.replace(/\[(\d+)\]/g,
+      (m, n) => `<a class="cite" onclick="openSource(${+n - 1})" href="javascript:void(0)">[${n}]</a>`);
+    renderSources(data.sources);
+    renderSpotsPanel(data.spots);
+  } catch (err) {
+    loading.classList.remove("loading");
+    loading.textContent = "出错了：" + err.message;
+  } finally {
+    send.disabled = false;
+    input.focus();
+  }
+}
+
+function openSource(i) {
+  const boxes = chat.querySelectorAll(".sources .src");
+  if (boxes[i]) { boxes[i].classList.toggle("open"); boxes[i].scrollIntoView({ behavior: "smooth", block: "nearest" }); }
+}
+
+/* ===== 周边推荐（高德地图 LBS）===== */
+function renderSpotsPanel(spots) {
+  if (!spots || !spots.length) return;
+  spots.forEach(spot => {
+    const card = document.createElement("div");
+    card.className = "rec-card";
+    card.innerHTML = `
+      <div class="rec-head">📍 ${escapeHtml(spot)}
+        <span class="btns">
+          <button data-kind="food">美食</button>
+          <button data-kind="hotel">住宿</button>
+        </span>
+      </div>
+      <div class="rec-body"><div class="rec-error">点上方按钮查看周边推荐</div></div>`;
+    card.querySelectorAll(".rec-head button").forEach(btn => {
+      btn.addEventListener("click", () => loadRec(card, spot, btn.dataset.kind, btn));
+    });
+    chat.appendChild(card);
+  });
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function fmtDist(m) {
+  if (m == null) return "";
+  return m < 1000 ? `约 ${m} 米` : `约 ${(m / 1000).toFixed(1)} 公里`;
+}
+
+async function loadRec(card, spot, kind, btn) {
+  const body = card.querySelector(".rec-body");
+  card.querySelectorAll(".rec-head button").forEach(b => b.classList.toggle("active", b === btn));
+  body.innerHTML = `<div class="rec-error">正在通过高德地图查找…</div>`;
+  body.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  try {
+    const res = await fetch("/api/recommend", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ spot, kind })
+    });
+    const data = await res.json();
+    if (!data.ok) {
+      body.innerHTML = `<div class="rec-error">${escapeHtml(data.error)}</div>`;
+      return;
+    }
+    let html = "";
+    if (data.map_url) html += `<img class="rec-map" src="${data.map_url}" alt="${escapeHtml(data.spot)}位置图">`;
+    if (data.intro) html += `<div class="rec-intro"><b>文化背景</b>（出处《${escapeHtml(data.intro.doc)}》）：${escapeHtml(data.intro.text.slice(0, 120))}…</div>`;
+    data.items.forEach(p => {
+      html += `<div class="rec-item">
+        <a class="n" href="${p.nav_url}" target="_blank" rel="noopener">${escapeHtml(p.name)} ↗</a>
+        <span class="d">${fmtDist(p.distance_m)}</span>
+        <div class="a">${escapeHtml(p.address || "")}${p.tel ? " · " + escapeHtml(p.tel) : ""}</div>
+        ${p.trace && p.trace.length ? `<details><summary>文化溯源</summary>${escapeHtml(p.trace[0].text.slice(0, 150))}…（出处《${escapeHtml(p.trace[0].doc)}》）</details>` : ""}
+      </div>`;
+    });
+    body.innerHTML = html;
+  } catch (err) {
+    body.innerHTML = `<div class="rec-error">请求失败：${escapeHtml(err.message)}</div>`;
+  }
+}
+
+/* 景点快捷入口 */
+async function loadSpots() {
+  try {
+    const res = await fetch("/api/spots");
+    const spots = await res.json();
+    const box = document.getElementById("chips");
+    if (!spots.length) { box.style.display = "none"; return; }
+    spots.slice(0, 8).forEach(s => {
+      const b = document.createElement("button");
+      b.textContent = `📍 ${s.name}`;
+      b.addEventListener("click", () => {
+        addMsg(`看看「${s.name}」周边`, "user");
+        renderSpotsPanel([s.name]);
+      });
+      box.appendChild(b);
+    });
+  } catch (e) { /* 静默 */ }
+}
+loadSpots();
+
+send.addEventListener("click", ask);
+input.addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); ask(); }
+});
+</script>
+</body>
+</html>
