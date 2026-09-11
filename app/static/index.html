@@ -9,8 +9,9 @@
     --ink: #2b2118;
     --paper: #faf6ee;
     --card: #fffdf7;
-    --accent: #8c2f1f;
-    --accent-soft: #f3e4dc;
+    --accent: #b02a1e;          /* 中国红 */
+    --accent-deep: #8e1616;
+    --accent-soft: #f7e3e0;
     --line: #e5dccb;
     --muted: #8a7f6d;
   }
@@ -25,8 +26,8 @@
   }
   header {
     padding: 14px 24px;
-    background: var(--card);
-    border-bottom: 1px solid var(--line);
+    background: linear-gradient(135deg, var(--accent-deep), var(--accent));
+    border-bottom: 1px solid var(--accent-deep);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -34,14 +35,14 @@
     flex-wrap: wrap;
   }
   .brand { display: flex; align-items: baseline; gap: 10px; }
-  .brand h1 { font-size: 20px; letter-spacing: 2px; color: var(--accent); }
-  .brand span { font-size: 12px; color: var(--muted); }
-  .style-switch { display: flex; background: var(--accent-soft); border-radius: 20px; padding: 3px; }
+  .brand h1 { font-size: 20px; letter-spacing: 2px; color: #fff; }
+  .brand span { font-size: 12px; color: rgba(255,255,255,.85); }
+  .style-switch { display: flex; background: rgba(255,255,255,.18); border-radius: 20px; padding: 3px; }
   .style-switch button {
     border: none; background: transparent; padding: 6px 16px;
-    border-radius: 18px; font-size: 13px; cursor: pointer; color: var(--ink);
+    border-radius: 18px; font-size: 13px; cursor: pointer; color: rgba(255,255,255,.92);
   }
-  .style-switch button.active { background: var(--accent); color: #fff; }
+  .style-switch button.active { background: #fff; color: var(--accent-deep); font-weight: 600; }
   main { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 16px; max-width: 860px; margin: 0 auto; width: 100%; }
   .msg { max-width: 78%; padding: 12px 16px; border-radius: 12px; line-height: 1.75; font-size: 14.5px; white-space: pre-wrap; }
   .msg.user { align-self: flex-end; background: var(--accent); color: #fff; border-bottom-right-radius: 4px; }
@@ -63,6 +64,8 @@
     border-radius: 16px; padding: 5px 14px; font-size: 12.5px; cursor: pointer;
   }
   .chips button:hover { border-color: var(--accent); color: var(--accent); }
+  .chips button.red { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .chips button.red:hover { background: var(--accent-deep); color: #fff; }
   /* 周边推荐面板 */
   .rec-card {
     align-self: flex-start; width: 78%; background: var(--card);
@@ -112,7 +115,7 @@
 <header>
   <div class="brand">
     <h1>徽州问典</h1>
-    <span>合肥 · 芜湖 · 阜阳 · 淮南 地方文化智能讲解与传承平台</span>
+    <span>江淮红色文化智能传承与乡村文旅赋能平台 · 合肥 芜湖 阜阳 淮南</span>
   </div>
   <div class="style-switch" id="styleSwitch">
     <button data-style="guide" class="active">导游版</button>
@@ -122,7 +125,7 @@
 </header>
 
 <main id="chat">
-  <div class="hint">问一句，听懂庐州故事 —— 试试「包公祠门前的石狮子为什么在笑？」「粉蜡笺是什么？」</div>
+  <div class="hint">传承红色基因，让每一次提问都有出处 —— 试试「渡江战役发生在哪里？」「大通万人坑见证了什么？」</div>
   <div class="chips" id="chips"></div>
 </main>
 
@@ -177,7 +180,7 @@ async function ask() {
   if (!q || send.disabled) return;
   input.value = "";
   addMsg(q, "user");
-  const loading = addMsg("正在查阅庐州典籍", "bot loading");
+  const loading = addMsg("正在查阅红色文献与地方典籍", "bot loading");
   send.disabled = true;
   try {
     const res = await fetch("/api/chat", {
@@ -274,9 +277,11 @@ async function loadSpots() {
     const spots = await res.json();
     const box = document.getElementById("chips");
     if (!spots.length) { box.style.display = "none"; return; }
-    spots.slice(0, 8).forEach(s => {
+    const redFirst = spots.filter(s => s.tag === "red").concat(spots.filter(s => s.tag !== "red"));
+    redFirst.slice(0, 10).forEach(s => {
       const b = document.createElement("button");
       b.textContent = `📍 ${s.name}`;
+      if (s.tag === "red") b.classList.add("red");
       b.addEventListener("click", () => {
         addMsg(`看看「${s.name}」周边`, "user");
         renderSpotsPanel([s.name]);

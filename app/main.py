@@ -84,8 +84,9 @@ def chat(req: ChatRequest):
 
 @app.get("/api/spots")
 def spots():
-    """已收录景点（前端快捷入口用）"""
-    return [{"name": n, "city": m.get("city", "")} for n, m in cfg.get("spots", {}).items()]
+    """已收录景点（前端快捷入口用；tag=red 为红色主题景点）"""
+    return [{"name": n, "city": m.get("city", ""), "tag": m.get("tag", "")}
+            for n, m in cfg.get("spots", {}).items()]
 
 
 @app.post("/api/recommend")
