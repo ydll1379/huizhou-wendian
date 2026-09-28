@@ -45,8 +45,15 @@ class Recommender:
         self.amap = AmapClient(cfg.get("amap", {}))
         self.rag = rag  # RAGPipeline：用其检索器做文化溯源
 
-    def kb_trace(self, query: str, k: int = 1, min_score: float = 0.5) -> list[dict]:
+    @property
+    def _thresholds(self) -> dict:
+        # 相关度口径随检索后端变化（本地余弦 vs WeKnora rerank 分），集中配置便于校准
+        return self.cfg.get("thresholds") or {}
+
+    def kb_trace(self, query: str, k: int = 1, min_score: float | None = None) -> list[dict]:
         """知识库溯源：检索与 query 相关的原文片段（余弦分过滤）"""
+        if min_score is None:
+            min_score = self._thresholds.get("spot_trace_min_score", 0.5)
         try:
             hits = self.rag.retriever.retrieve(query, k)
         except Exception:
@@ -61,7 +68,7 @@ class Recommender:
     def recommend(self, spot: str, kind: str = "food", limit: int | None = None) -> dict:
         resolved = _resolve_spot(spot, self.spots)
         if not resolved:
-            raise ValueError(f"暂未收录景点「{spot}」，目前支持四城的 {len(self.spots)} 处景点。")
+            raise ValueError(f"暂未收录景点「{spot}」，目前已收录 {len(self.spots)} 处景点。")
         name, meta = resolved
 
         if not self.amap.ready:
@@ -88,7 +95,7 @@ class Recommender:
                 lng2, lat2 = map(float, p["location"].split(","))
                 dist = round(_haversine_m(lng1, lat1, lng2, lat2))
             # 逐条溯源：对以菜品/地标命名的 POI（如"三河米饺"）能命中知识库
-            trace = self.kb_trace(p["name"], k=1, min_score=0.5)
+            trace = self.kb_trace(p["name"], k=1)
             items.append({
                 **p,
                 "distance_m": dist,
@@ -106,11 +113,12 @@ class Recommender:
             "address": found["address"],
             "kind": "food" if is_food else "hotel",
             "map_url": self.amap.static_map_url(found["location"]),
+            "radius_m": radius,
             "intro": intro,
             "items": items,
         }
 
     def kb_context_intro(self, name: str) -> dict | None:
         """景点级文化背景（推荐列表的『为什么值得来』）"""
-        hits = self.kb_trace(name, k=1, min_score=0.3)
+        hits = self.kb_trace(name, k=1, min_score=self._thresholds.get("spot_intro_min_score", 0.3))
         return hits[0] if hits else None

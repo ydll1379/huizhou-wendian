@@ -29,20 +29,21 @@ class Generator:
             )
         self.client = OpenAI(api_key=api_key, base_url=cfg["llm"]["base_url"])
 
-    def generate(self, question: str, docs: list[dict], style: str) -> dict:
+    def generate(self, question: str, docs: list[dict], style: str, output_context: str = "") -> dict:
         """返回 {'answer': str, 'citations': [编号列表], 'sources': [docs], 'refused': bool}"""
         style_prompt = self.cfg.get("styles", {}).get(style, self.cfg.get("styles", {}).get("guide", ""))
         context = build_context_block(docs)
 
         system = (
             f"{style_prompt}\n\n"
-            "你是「徽州问典」地方文化讲解助手，覆盖合肥、芜湖、阜阳、淮南等市的红色文化与地方文史知识（含革命老区）。回答规则：\n"
+            "你是「徽州问典」地方文化讲解助手，覆盖安徽徽州地区红色文化与地方文史知识（含革命老区）。回答规则：\n"
             "1. 只依据【背景资料】回答，不要编造资料中没有的信息；\n"
             "2. 涉及革命历史、英烈人物和红色主题时，表述必须庄重、准确，使用规范称谓并保持敬意；\n"
             "3. 关键事实后面用 [编号] 标注出处（如 [1]），编号必须对应背景资料；\n"
             "4. 如果背景资料不足以回答问题，直接说明'资料库中暂无相关信息'，不要猜测。"
         )
-        user = f"【背景资料】\n{context}\n\n【问题】\n{question}"
+        extra = f"\n\n【输出要求】\n{output_context}" if output_context else ""
+        user = f"【背景资料】\n{context}\n\n【问题】\n{question}{extra}"
 
         resp = self.client.chat.completions.create(
             model=self.cfg["model"],

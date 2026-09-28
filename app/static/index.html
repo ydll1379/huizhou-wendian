@@ -3,26 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>徽州问典 · 地方文化智能讲解</title>
+<title>徽州问典 · 徽州红色文化</title>
 <style>
   :root {
-    --ink: #2b2118;
-    --paper: #faf6ee;
-    --card: #fffdf7;
-    --accent: #b02a1e;          /* 中国红 */
-    --accent-deep: #8e1616;
-    --accent-soft: #f7e3e0;
-    --line: #e5dccb;
-    --muted: #8a7f6d;
+    --ink: #26211e;
+    --paper: #f5f4f1;
+    --card: #fffdfa;
+    --accent: #ad2930;
+    --accent-deep: #851d25;
+    --accent-soft: #f8eae7;
+    --line: rgba(83, 65, 56, .13);
+    --muted: #817973;
+    --gold: #bb925d;
+    --shadow: 0 14px 38px rgba(52, 37, 30, .075);
+    --shadow-soft: 0 6px 20px rgba(52, 37, 30, .045);
+    --radius-control: 11px;
+    --radius-card: 17px;
+    --radius-panel: 22px;
+    --focus-ring: 0 0 0 4px rgba(173, 41, 48, .105);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  #chatPage { flex: 1; display: flex; flex-direction: column; min-height: 0; }
-  #routePage { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+  #chatPage { flex: 1 0 auto; display: flex; flex-direction: column; min-height: auto; }
+  #routePage { flex: 1 0 auto; display: flex; flex-direction: column; min-height: auto; }
   body {
     font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
     background: var(--paper);
     color: var(--ink);
-    height: 100vh;
+    height: auto;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
   }
@@ -133,6 +141,22 @@
   }
   .rd-head .actions button:disabled { opacity: .5; cursor: wait; }
   .progress { flex: 1; color: var(--muted); font-size: 13px; }
+  .route-map-card { overflow:hidden; border:1px solid var(--line); border-radius:18px; background:var(--card); box-shadow:var(--shadow-soft); }
+  .route-map-head { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:17px 20px 12px; }
+  .route-map-title { display:flex; flex-direction:column; gap:3px; }
+  .route-map-title small { color:var(--muted); font-size:10px; letter-spacing:.12em; text-transform:uppercase; }
+  .route-map-title b { color:var(--ink); font-size:16px; }
+  .route-map-hint { color:var(--muted); font-size:11px; text-align:right; }
+  .route-map-image { min-height:180px; margin:0 14px; overflow:hidden; border:1px solid var(--line); border-radius:12px; background:linear-gradient(135deg,#f2f0e9,#e9ede7); }
+  .route-map-image img { display:block; width:100%; height:auto; min-height:180px; object-fit:contain; }
+  .route-map-error { display:grid; min-height:180px; place-items:center; padding:20px; color:var(--muted); font-size:13px; text-align:center; }
+  .route-map-image [hidden] { display:none !important; }
+  .route-map-legend { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:8px; padding:13px 14px 15px; }
+  .route-map-stop { display:flex; align-items:center; gap:9px; min-width:0; border:1px solid var(--line); border-radius:11px; padding:9px 10px; background:#fff; text-align:left; cursor:pointer; transition:border-color .18s,background .18s; }
+  .route-map-stop:hover { border-color:rgba(173,41,48,.3); background:#fffaf8; }
+  .route-map-stop i { display:grid; width:24px; height:24px; flex:none; place-items:center; border-radius:50%; color:#fff; background:var(--accent); font-size:11px; font-style:normal; font-weight:700; }
+  .route-map-stop span { overflow:hidden; color:#443a35; font-size:12px; font-weight:600; text-overflow:ellipsis; white-space:nowrap; }
+  .route-map-stop small { margin-left:auto; color:var(--muted); font-size:10px; white-space:nowrap; }
   .stop {
     background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 18px;
   }
@@ -153,11 +177,6 @@
   .stop .ck button { border: none; background: var(--accent); color: #fff; border-radius: 8px; padding: 0 16px; font-size: 13px; cursor: pointer; }
   .leg { align-self: center; color: var(--muted); font-size: 12.5px; padding: 0 8px; margin: -6px 0; }
   .overlay { position: fixed; inset: 0; background: rgba(43,33,24,.55); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 24px; }
-  .report-box { background: var(--paper); border-radius: 14px; width: 100%; max-width: 720px; max-height: 85vh; display: flex; flex-direction: column; }
-  .report-head { display: flex; gap: 8px; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--line); color: var(--accent); font-weight: 700; }
-  .report-head button { border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 4px 12px; font-size: 12.5px; cursor: pointer; }
-  .report-head button.danger { border: none; background: var(--accent); color: #fff; }
-  #reportText { overflow-y: auto; padding: 18px 22px; white-space: pre-wrap; font-size: 13.5px; line-height: 1.9; font-family: inherit; }
   footer {
     border-top: 1px solid var(--line); background: var(--card);
     padding: 14px 24px; display: flex; gap: 12px; max-width: 860px; margin: 0 auto; width: 100%;
@@ -174,81 +193,708 @@
   #send:disabled { opacity: .5; cursor: not-allowed; }
   .loading::after { content: "…"; animation: dots 1.2s infinite; }
   @keyframes dots { 0% { content: "…"; } 33% { content: "⋯"; } 66% { content: "⋮"; } }
+  /* Editorial red heritage, with calm spacing, translucency, and subtle motion. */
+  body { background: radial-gradient(ellipse at 50% -20%, #fff 0, var(--paper) 58%); letter-spacing: -.01em; }
+  header { position:relative; z-index:2; padding:13px max(24px, calc((100vw - 1180px)/2)); background:rgba(143,23,31,.96); border:0; box-shadow:0 1px 0 rgba(255,255,255,.15), 0 8px 24px rgba(90,18,22,.12); backdrop-filter:blur(18px); }
+  .brand { align-items:center; gap:12px; }
+  .brand h1 { font-size:19px; letter-spacing:2px; font-weight:650; }
+  .brand h1::before { content:""; display:inline-block; width:3px; height:18px; background:var(--gold); border-radius:3px; margin:0 10px 0 0; vertical-align:-3px; }
+  .brand span { color:rgba(255,255,255,.7); letter-spacing:.02em; }
+  .style-switch { background:rgba(40,0,0,.18); border:1px solid rgba(255,255,255,.12); padding:3px; }
+  .style-switch button,.page-nav button { transition:background .2s ease,color .2s ease,transform .2s ease; }
+  .style-switch button { padding:7px 13px; }
+  .page-nav button { border-color:rgba(255,255,255,.24); padding:7px 14px; }
+  .page-nav button:not(.active):hover,.style-switch button:not(.active):hover { background:rgba(255,255,255,.12); }
+  body #chatPage, body #routePage { background:transparent; }
+  main { max-width:940px; padding:34px 28px 28px; gap:14px; scroll-behavior:smooth; }
+  .welcome-card { display:flex; align-items:center; justify-content:space-between; position:relative; overflow:hidden; min-height:220px; padding:34px 40px; color:#fff; border-radius:24px; background:linear-gradient(115deg,#891a22 0%,#b3262d 55%,#d04a3b 100%); box-shadow:0 18px 46px rgba(139,28,35,.2); }
+  .welcome-card::after { content:""; position:absolute; width:340px; height:340px; right:90px; top:-205px; border:1px solid rgba(255,255,255,.12); border-radius:50%; box-shadow:0 0 0 26px rgba(255,255,255,.035),0 0 0 54px rgba(255,255,255,.03); }
+  .welcome-copy { position:relative; z-index:1; }
+  .eyebrow { display:flex; align-items:center; gap:8px; font-size:10px; font-weight:700; letter-spacing:.17em; color:var(--gold); }
+  .eyebrow-dot { width:6px; height:6px; border-radius:50%; background:var(--gold); box-shadow:0 0 0 4px rgba(215,178,122,.15); }
+  .welcome-card h2,.route-hero h2 { margin-top:15px; font-size:clamp(26px,4vw,38px); line-height:1.2; letter-spacing:-.045em; font-weight:650; }
+  .welcome-card h2 em { color:#f3c98a; font-style:normal; }
+  .welcome-card p,.route-hero p { margin-top:11px; font-size:14px; color:rgba(255,255,255,.76); }
+  .welcome-tags { display:flex; gap:8px; margin-top:22px; }
+  .welcome-tags span { padding:5px 10px; border:1px solid rgba(255,255,255,.2); border-radius:20px; color:rgba(255,255,255,.84); font-size:11px; background:rgba(255,255,255,.07); }
+  .welcome-seal { width:98px; height:98px; flex:none; margin:0 7% 0 24px; border:1px solid rgba(242,205,151,.72); outline:1px solid rgba(242,205,151,.25); outline-offset:6px; border-radius:50%; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#f3c98a; transform:rotate(-8deg); }
+  .welcome-seal span { font-family:serif; font-size:40px; font-weight:700; line-height:1; }
+  .welcome-seal i { margin-top:4px; font-size:7px; letter-spacing:.13em; line-height:1.15; text-align:center; font-style:normal; }
+  .prompt-label { display:flex; align-items:baseline; gap:10px; margin:10px 2px 0; }
+  .prompt-label span { font-size:14px; font-weight:650; color:var(--ink); }
+  .prompt-label small { color:var(--muted); font-size:12px; }
+  .chips { justify-content:flex-start; margin:0; gap:9px; }
+  .chips button { padding:9px 14px; border-radius:14px; font-size:12.5px; background:rgba(255,255,255,.78); box-shadow:0 2px 8px rgba(40,25,20,.025); transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease; }
+  .chips button:hover { transform:translateY(-2px); box-shadow:0 7px 18px rgba(130,30,30,.1); }
+  .chips button.red { background:#fff; color:var(--accent-deep); border-color:rgba(198,40,40,.2); }
+  .msg { border-radius:18px; padding:14px 17px; box-shadow:0 4px 14px rgba(40,25,20,.035); }
+  .msg.user { border-bottom-right-radius:6px; background:linear-gradient(135deg,#c62828,#a51e28); }
+  .msg.bot { border-bottom-left-radius:6px; }
+  .sources,.rec-card { width:min(78%,700px); }
+  .src { border-style:solid; border-radius:12px; padding:12px 14px; transition:border-color .2s ease,transform .2s ease; }
+  .src:hover { border-color:rgba(198,40,40,.35); transform:translateY(-1px); }
+  footer { max-width:940px; padding:12px 28px 20px; background:rgba(245,244,241,.9); border:0; }
+  #input { min-height:46px; padding:12px 18px; border-color:rgba(92,67,55,.14); background:rgba(255,255,255,.88); box-shadow:0 3px 12px rgba(40,25,20,.035); transition:border-color .2s,box-shadow .2s; }
+  #input:focus { border-color:rgba(198,40,40,.48); box-shadow:0 0 0 4px rgba(198,40,40,.08); }
+  #send { min-width:88px; background:linear-gradient(135deg,#c62828,#a31e27); box-shadow:0 5px 14px rgba(166,30,39,.2); transition:transform .18s,box-shadow .18s; }
+  #send:hover:not(:disabled) { transform:translateY(-1px); box-shadow:0 8px 18px rgba(166,30,39,.26); }
+  .route-main { max-width:1180px; padding:34px 28px; gap:18px; }
+  .route-hero { padding:27px 32px; border-radius:22px; color:white; background:linear-gradient(115deg,#891a22,#bd3032 62%,#d25040); box-shadow:var(--shadow); }
+  .route-hero h2 span { color:#f3c98a; }
+  .route-controls { padding:16px; gap:10px; background:rgba(255,255,255,.72); border:1px solid var(--line); border-radius:18px; box-shadow:0 5px 20px rgba(40,25,20,.035); }
+  .route-controls select { border-radius:12px; min-height:42px; padding:8px 14px; }
+  .route-controls .gen,.rd-head .actions button { border-radius:12px; min-height:42px; background:linear-gradient(135deg,#c62828,#a31e27); box-shadow:0 5px 14px rgba(166,30,39,.16); }
+  .route-card,.rd-head,.stop { border-radius:18px; box-shadow:0 6px 22px rgba(40,25,20,.04); }
+  .route-card { border-left-width:3px; padding:18px 20px; transition:transform .2s,box-shadow .2s; }
+  .route-card:hover { transform:translateY(-2px); box-shadow:var(--shadow); }
+  .rd-head { padding:20px 22px; }
+  .stop { padding:17px 20px; }
+  .stop .task { border:1px solid rgba(198,40,40,.07); }
+  .stop .ck input { min-width:0; border-radius:10px; }
+  .stop .ck button { border-radius:10px; }
+  .overlay { backdrop-filter:blur(12px); background:rgba(35,22,20,.48); }
+  .visit-card { overflow:hidden; background:rgba(255,255,255,.94); border-color:rgba(112,70,57,.12); box-shadow:0 10px 28px rgba(40,25,20,.055); }
+  .visit-head { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:17px 18px 13px; }
+  .visit-title { display:flex; align-items:center; gap:11px; min-width:0; }
+  .visit-pin { width:38px; height:38px; display:grid; place-items:center; flex:none; border-radius:13px; background:var(--accent-soft); }
+  .visit-title div { display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; }
+  .visit-title small { flex-basis:100%; color:var(--muted); font-size:11px; }
+  .visit-title b { color:var(--ink); font-size:15px; }
+  .visit-city { color:var(--muted); font-size:11px; }
+  .route-link { border:1px solid rgba(198,40,40,.17); border-radius:11px; padding:8px 11px; background:#fff; color:var(--accent-deep); font-size:12px; cursor:pointer; white-space:nowrap; }
+  .route-link:hover { background:var(--accent-soft); }
+  .visit-tabs { display:flex; gap:6px; padding:0 18px 12px; border-bottom:1px solid var(--line); }
+  .visit-tabs button { border:0; border-radius:10px; padding:7px 11px; background:#f6f4f2; color:var(--muted); font-size:12px; cursor:pointer; }
+  .visit-tabs button.active { color:var(--accent-deep); background:var(--accent-soft); font-weight:650; }
+  .visit-card .rec-body { padding:13px 18px 17px; }
+  .rec-empty { color:var(--muted); font-size:12px; line-height:1.7; padding:2px 0; }
+  .rec-loading { display:flex; align-items:center; gap:9px; color:var(--muted); font-size:12px; padding:5px 0; }
+  .spinner { width:14px; height:14px; border:2px solid rgba(198,40,40,.18); border-top-color:var(--accent); border-radius:50%; animation:spin .75s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .rec-summary { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:6px; }
+  .rec-summary b { color:var(--ink); font-size:13px; }
+  .rec-summary span,.spot-address { color:var(--muted); font-size:11px; }
+  .spot-address { margin-bottom:10px; }
+  .spot-address span { margin:0 5px; color:var(--gold); }
+  .rec-map { margin:8px 0 10px; max-height:190px; object-fit:cover; }
+  .rec-intro { display:block; padding:11px 12px; border-radius:12px; background:#faf7f1; line-height:1.6; }
+  .rec-intro b { color:var(--accent-deep); margin-right:8px; }
+  .rec-intro span { color:var(--muted); font-size:11px; }
+  .rec-intro p { margin-top:5px; color:#625b56; font-size:12px; }
+  .rec-item { padding:12px 0 10px; border-top:1px solid var(--line); }
+  .rec-item-top { display:flex; align-items:center; gap:9px; }
+  .rec-rank { color:#c9b6aa; font-size:11px; font-variant-numeric:tabular-nums; }
+  .rec-name-wrap { flex:1; min-width:0; display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
+  .rec-item .n { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; }
+  .rec-item .d { flex:none; margin:0; }
+  .rec-item .a { margin:4px 0 0 24px; line-height:1.5; }
+  .nav-action { flex:none; padding:5px 8px; border-radius:8px; background:#f8efed; color:var(--accent-deep); font-size:10px; text-decoration:none; }
+  .rec-item details { margin:6px 0 0 24px; }
+  .rec-item details div { margin-top:6px; line-height:1.65; }
+  .rec-item details small { display:block; margin-top:4px; color:var(--muted); }
+  .route-context { flex-basis:100%; padding:2px 3px 0; color:var(--muted); font-size:12px; line-height:1.6; }
+  .route-card { width:100%; }
+  .starter-chips { display:flex; flex-wrap:wrap; gap:8px; }
+  .starter-chips button { border:1px solid rgba(143,23,31,.12); border-radius:13px; padding:9px 12px; background:rgba(255,255,255,.83); color:#5b4540; font-size:12px; cursor:pointer; text-align:left; transition:transform .18s,border-color .18s,box-shadow .18s; }
+  .starter-chips button:hover { transform:translateY(-1px); border-color:rgba(198,40,40,.34); box-shadow:0 5px 14px rgba(130,30,30,.08); }
+  .landmark-label { margin-top:9px; }
+  .prototype-note { display:flex; align-items:center; justify-content:space-between; gap:12px; color:#8f8580; font-size:10px; padding:2px 3px 8px; }
+  .prototype-note button { padding:0; border:0; background:none; color:var(--accent-deep); font-size:10px; cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
+  .answer-tools { display:flex; justify-content:flex-end; margin-top:9px; padding-top:8px; border-top:1px solid rgba(92,67,55,.08); }
+  .answer-tools button { border:0; padding:4px 8px; border-radius:8px; background:#f7efed; color:var(--accent-deep); font-size:11px; cursor:pointer; }
+  .feedback-box { width:min(100%,500px); padding:22px; border:1px solid rgba(255,255,255,.7); border-radius:20px; background:#fffdfa; box-shadow:0 24px 70px rgba(20,10,10,.22); }
+  .feedback-head { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px; }
+  .feedback-head small { color:var(--accent); font-size:9px; letter-spacing:.18em; font-weight:700; }
+  .feedback-head h2 { margin-top:5px; color:var(--ink); font-size:21px; }
+  .feedback-head button { width:30px; height:30px; border:0; border-radius:50%; background:#f3f0ed; color:var(--muted); font-size:21px; cursor:pointer; }
+  .feedback-box label { display:block; margin:13px 0 6px; color:#514845; font-size:12px; font-weight:650; }
+  .feedback-box select,.feedback-box textarea { width:100%; border:1px solid var(--line); border-radius:11px; padding:10px 12px; outline:none; background:#fff; color:var(--ink); font:inherit; font-size:13px; }
+  .feedback-box textarea { resize:vertical; line-height:1.7; }
+  .feedback-box select:focus,.feedback-box textarea:focus { border-color:rgba(198,40,40,.48); box-shadow:0 0 0 3px rgba(198,40,40,.07); }
+  .feedback-privacy { margin-top:8px; color:var(--muted); font-size:10px; }
+  .feedback-actions { display:flex; align-items:center; justify-content:flex-end; gap:8px; margin-top:17px; }
+  .feedback-actions span { flex:1; color:#34724b; font-size:11px; }
+  .feedback-actions button { border:1px solid var(--line); border-radius:10px; padding:8px 13px; background:#fff; color:#625955; font-size:12px; cursor:pointer; }
+  .feedback-actions button.submit { border:0; background:var(--accent); color:white; }
+  .feedback-actions button:disabled { opacity:.55; cursor:wait; }
+  .audience-options { display:flex; flex-wrap:wrap; gap:8px; padding:10px 0 2px; }
+  .audience-options select,.audience-options input { border:1px solid var(--line); border-radius:10px; padding:8px 10px; background:var(--card); color:var(--ink); font:inherit; font-size:12px; }
+  .audience-options input { flex:1; min-width:180px; }
+  #teacherOptions,#promoOptions { display:none; }
+  .admin-box { width:min(100%,760px); max-height:88vh; overflow:auto; padding:22px; border:1px solid rgba(255,255,255,.7); border-radius:20px; background:#fffdfa; box-shadow:0 24px 70px rgba(20,10,10,.22); }
+  .admin-item { border:1px solid var(--line); background:var(--card); border-radius:13px; padding:14px; margin-top:10px; }
+  .admin-item p { white-space:pre-wrap; line-height:1.65; margin:10px 0; }
+  .admin-tools { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .admin-tools select,.admin-tools input,.admin-tools button { border:1px solid var(--line); border-radius:8px; padding:7px 9px; background:#fff; color:var(--ink); }
+  @media (max-width:720px) {
+    body { height:100dvh; }
+    header { padding:12px 16px; gap:10px; }
+    .brand { width:100%; justify-content:space-between; }
+    .brand span { font-size:10px; text-align:right; max-width:58%; }
+    .header-right { width:100%; justify-content:space-between; gap:8px; }
+    .style-switch button { padding:6px 9px; font-size:11px; }
+    .page-nav { gap:4px; }
+    .page-nav button { padding:6px 9px; font-size:11px; }
+    main,.route-main { padding:18px 16px; }
+    .welcome-card { min-height:200px; padding:25px 22px; border-radius:20px; }
+    .welcome-seal { width:66px; height:66px; margin:0 4px 0 10px; }
+    .welcome-seal span { font-size:28px; }
+    .welcome-seal i { font-size:6px; }
+    .welcome-card p { max-width:260px; font-size:12px; line-height:1.7; }
+    .welcome-tags { gap:5px; margin-top:16px; }
+    .welcome-tags span { padding:4px 7px; font-size:10px; }
+    .prompt-label { display:block; }
+    .prompt-label small { display:block; margin-top:4px; }
+    .chips { gap:7px; }
+    .chips button { padding:8px 10px; font-size:11px; }
+    .msg,.sources,.rec-card { max-width:94%; width:94%; }
+    footer { padding:10px 14px max(12px,env(safe-area-inset-bottom)); gap:8px; }
+    #input { padding:11px 14px; font-size:14px; }
+    #send { min-width:68px; padding:0 16px; }
+    .route-hero { padding:23px 21px; border-radius:19px; }
+    .route-controls { padding:12px; }
+    .route-controls select { flex:1; }
+    .route-controls .gen { width:100%; }
+    .route-map-head { align-items:flex-start; flex-direction:column; gap:5px; padding:15px 14px 10px; }
+    .route-map-hint { text-align:left; }
+    .route-map-image { min-height:150px; margin-inline:9px; }
+    .route-map-image img,.route-map-error { min-height:150px; }
+    .route-map-legend { grid-template-columns:1fr; padding:10px 9px 11px; }
+    .visit-card { width:100%; max-width:100%; }
+    .visit-head { align-items:flex-start; padding:14px 13px 11px; gap:7px; }
+    .visit-title { gap:8px; }
+    .visit-pin { width:32px; height:32px; border-radius:11px; }
+    .visit-title b { font-size:13px; }
+    .route-link { padding:7px 8px; font-size:10px; }
+    .visit-tabs { padding:0 13px 10px; }
+    .visit-card .rec-body { padding:11px 13px 14px; }
+    .rec-summary { align-items:flex-start; flex-direction:column; gap:2px; }
+    .rec-item .a { margin-left:20px; }
+    .nav-action { padding:5px 6px; }
+    .starter-chips { gap:6px; }
+    .starter-chips button { padding:8px 10px; font-size:11px; }
+    .prototype-note { align-items:flex-start; flex-direction:column; gap:4px; }
+    .feedback-box { padding:18px; border-radius:17px; }
+    .rd-head .actions { flex-wrap:wrap; }
+    .progress { flex-basis:100%; }
+  }
+  /* Focused workbench layout */
+  #chatPage { display:flex; flex:1 0 auto; min-height:auto; }
+  .workspace-layout { width:min(1440px,100%); flex:1 0 auto; min-height:auto; margin:0 auto; padding:24px clamp(18px,3vw,42px); display:grid; grid-template-columns:minmax(0,1fr) 318px; gap:22px; }
+  .workspace-main { min-width:0; min-height:auto; display:flex; flex-direction:column; gap:15px; }
+  .workspace-main.has-conversation > .welcome-card { display:none; }
+  .workspace-main .welcome-card { min-height:174px; padding:26px 32px; flex:none; }
+  .workspace-main .welcome-card h2 { font-size:clamp(24px,3vw,32px); margin-top:0; }
+  .workspace-main .welcome-card p { margin-top:8px; }
+  .workspace-main .welcome-tags { margin-top:15px; }
+  .workspace-main .welcome-seal { width:78px; height:78px; margin-right:4%; }
+  .workspace-main .welcome-seal span { font-size:33px; }
+  .chat-thread { flex:none; min-height:42vh; width:100%; max-width:none; margin:0; padding:4px 3px 18px; overflow:visible; scroll-behavior:smooth; }
+  .chat-thread .msg,.chat-thread .sources,.chat-thread .rec-card { width:min(92%,760px); max-width:760px; }
+  .chat-thread .sources { align-self:flex-start; }
+  .empty-thread { min-height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:9px; color:var(--muted); text-align:center; padding:22px; }
+  .empty-thread[hidden] { display:none; }
+  .empty-thread b { color:#655c57; font-size:14px; font-weight:600; }
+  .empty-thread small { max-width:430px; font-size:12px; line-height:1.7; }
+  .empty-mark { width:42px; height:42px; display:grid; place-items:center; border:1px solid rgba(198,40,40,.16); border-radius:15px; color:var(--accent-deep); background:#fff; font-family:serif; font-size:21px; box-shadow:0 7px 18px rgba(40,25,20,.045); }
+  .composer { width:100%; max-width:none; flex:none; margin:0; padding:12px 0 0; border-top:1px solid var(--line); background:transparent; }
+  .workbench-rail { align-self:stretch; min-height:0; overflow:hidden; display:flex; flex-direction:column; padding:19px; border:1px solid rgba(92,67,55,.1); border-radius:20px; background:rgba(255,255,255,.7); box-shadow:0 12px 34px rgba(40,25,20,.045); backdrop-filter:blur(18px); }
+  .rail-fixed { flex:none; max-height:68%; overflow:auto; padding-right:3px; }
+  .rail-results { display:flex; flex:1; min-height:100px; flex-direction:column; overflow:hidden; margin-top:14px; padding-top:12px; border-top:1px solid var(--line); }
+  .rail-results .results-heading { flex:none; margin-bottom:8px; }
+  .rail-results .results-heading button { border:0; padding:3px 7px; border-radius:8px; color:var(--accent-deep); background:#f8efed; font-size:10px; cursor:pointer; }
+  .rail-empty { margin:auto 0; padding:12px 7px; color:#a09892; font-size:10px; line-height:1.7; text-align:center; }
+  .rail-empty[hidden] { display:none; }
+  .context-section { flex:1; min-height:0; overflow:auto; }
+  .rail-heading { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .rail-heading small { color:var(--muted); font-size:10px; letter-spacing:.06em; }
+  .rail-heading h2 { margin-top:3px; color:var(--ink); font-size:18px; letter-spacing:-.03em; }
+  .rail-status { display:flex; align-items:center; gap:6px; color:#687a5b; font-size:10px; white-space:nowrap; }
+  .rail-status i { width:6px; height:6px; border-radius:50%; background:#719568; box-shadow:0 0 0 3px rgba(113,149,104,.13); }
+  .rail-description { margin-top:8px; color:var(--muted); font-size:11px; line-height:1.6; }
+  .rail-section { margin-top:17px; padding-top:15px; border-top:1px solid var(--line); }
+  .rail-section-title { display:flex; align-items:center; justify-content:space-between; margin-bottom:9px; }
+  .rail-section-title span { color:#4b413d; font-size:12px; font-weight:650; }
+  .rail-section-title small { color:#a09892; font-size:10px; }
+  .workbench-rail .audience-options { padding:0; gap:7px; }
+  .workbench-rail .audience-options select,.workbench-rail .audience-options input { width:100%; min-height:38px; font-size:11px; }
+  .workbench-rail .audience-options input { flex:auto; }
+  .workbench-rail .starter-chips { flex-direction:column; gap:6px; }
+  .workbench-rail .starter-chips button { width:100%; padding:9px 10px; background:rgba(255,255,255,.78); line-height:1.5; }
+  .workbench-rail .chips { display:grid; grid-template-columns:1fr; gap:6px; }
+  .workbench-rail .chips button { width:100%; padding:8px 10px; font-size:11px; text-align:left; }
+  .landmark-section .rail-section-title { align-items:center; }
+  .landmark-refresh { flex:none; border:1px solid rgba(173,41,48,.15); border-radius:8px; padding:5px 8px; color:var(--accent-deep); background:#fff; font:inherit; font-size:10px; cursor:pointer; }
+  .landmark-refresh:hover { background:var(--accent-soft); }
+  .landmark-hint { margin-top:7px; color:var(--muted); font-size:10px; line-height:1.5; }
+  .context-entry { border:1px solid rgba(92,67,55,.09); border-radius:12px; background:rgba(255,255,255,.65); }
+  .context-entry + .context-entry { margin-top:8px; }
+  .context-entry summary { padding:10px; color:#665b55; font-size:10px; line-height:1.5; cursor:pointer; }
+  .context-body { padding:0 9px 9px; }
+  .workbench-rail .sources,.workbench-rail .rec-card { width:100%; max-width:100%; }
+  .workbench-rail .sources { gap:7px; }
+  .workbench-rail .src { padding:10px; font-size:11px; }
+  .workbench-rail .src .s { font-size:10px; line-height:1.55; }
+  .rail-footer { display:flex; flex-direction:column; gap:8px; margin-top:18px; padding-top:14px; border-top:1px solid var(--line); color:#928984; font-size:9px; line-height:1.6; }
+  .rail-footer { flex:none; }
+  .rail-footer button { align-self:flex-start; border:0; padding:0; color:var(--accent-deep); background:none; font:inherit; font-size:10px; cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
+  .thread-toolbar { flex:none; display:flex; align-items:center; justify-content:space-between; padding:0 2px 8px; color:#746a64; font-size:11px; }
+  .thread-toolbar button { border:1px solid var(--line); padding:5px 9px; border-radius:9px; background:rgba(255,255,255,.65); color:var(--muted); font-size:10px; cursor:pointer; }
+  .answer-tools { justify-content:space-between; gap:8px; }
+  .answer-tools button.retry { background:transparent; border:1px solid var(--line); color:var(--muted); }
+  .route-multi-picker { position:relative; flex:1 1 220px; min-width:190px; }
+  .route-multi-picker input { width:100%; min-height:42px; border:1px solid var(--line); border-radius:12px; padding:8px 12px; color:var(--ink); background:var(--card); font:inherit; font-size:13px; }
+  .route-via-options { position:absolute; top:calc(100% + 5px); left:0; right:0; z-index:5; max-height:220px; overflow:auto; padding:5px; border:1px solid var(--line); border-radius:12px; background:#fffdfa; box-shadow:0 12px 28px rgba(40,25,20,.12); }
+  .route-via-options[hidden] { display:none; }
+  .route-via-options button { display:block; width:100%; border:0; border-radius:8px; padding:9px 10px; background:transparent; color:var(--ink); text-align:left; font:inherit; font-size:12px; cursor:pointer; }
+  .route-via-options button:hover { background:var(--accent-soft); color:var(--accent-deep); }
+  .route-via-tags { display:flex; flex-wrap:wrap; gap:5px; margin-top:6px; }
+  .route-via-tag { display:inline-flex; align-items:center; gap:6px; border:1px solid rgba(198,40,40,.15); border-radius:999px; padding:4px 8px; color:var(--accent-deep); background:#fff8f6; font-size:10px; }
+  .route-via-tag button { border:0; padding:0; color:inherit; background:transparent; font-size:13px; line-height:1; cursor:pointer; }
+  @media (max-width:980px) {
+    .workspace-layout { grid-template-columns:minmax(0,1fr) 286px; gap:15px; padding-inline:18px; }
+    .workbench-rail { padding:16px; }
+    .workspace-main .welcome-card { padding:23px 25px; }
+  }
+  @media (max-width:760px) {
+    body { height:auto; min-height:100dvh; }
+    #chatPage { flex:1 0 auto; min-height:0; overflow:visible; }
+    .workspace-layout { display:flex; flex:0 0 auto; flex-direction:column; gap:12px; min-height:auto; padding:14px 14px 10px; overflow:visible; }
+    .workspace-main { min-height:auto; }
+    .workspace-main .welcome-card { min-height:150px; padding:21px 19px; border-radius:19px; }
+    .workspace-main .welcome-seal { width:60px; height:60px; margin-left:7px; }
+    .workspace-main .welcome-seal span { font-size:25px; }
+    .workspace-main .welcome-seal i { font-size:5px; }
+    .chat-thread { flex:none; min-height:230px; overflow:visible; }
+    .chat-thread .msg,.chat-thread .sources,.chat-thread .rec-card { width:100%; max-width:100%; }
+    .workbench-rail { order:2; overflow:visible; padding:16px; }
+    .rail-fixed { max-height:none; overflow:visible; padding-right:0; }
+    .rail-results { flex:none; min-height:0; max-height:44vh; }
+    .context-section { overflow:auto; }
+    .route-multi-picker { flex-basis:100%; }
+    .composer { position:sticky; bottom:0; align-items:center; padding:10px 0 max(10px,env(safe-area-inset-bottom)); background:rgba(245,244,241,.96); backdrop-filter:blur(14px); }
+    #input { min-height:66px; line-height:1.45; }
+    #send { min-height:48px; align-self:center; }
+  }
+  /* Shared visual language: porcelain surfaces, restrained vermilion, quiet gold. */
+  body { background:radial-gradient(ellipse at 52% -24%, #fff 0, var(--paper) 62%); color:var(--ink); }
+  header { background:rgba(127,27,34,.97); box-shadow:0 5px 20px rgba(65,28,28,.12); }
+  .welcome-card { color:var(--ink); border:1px solid rgba(126,91,68,.12); background:linear-gradient(118deg,#fffdfa 0%,#f8f3eb 100%); box-shadow:var(--shadow-soft); }
+  .welcome-card::after { border-color:rgba(187,146,93,.18); box-shadow:0 0 0 26px rgba(187,146,93,.035),0 0 0 54px rgba(187,146,93,.025); }
+  .welcome-card .eyebrow,.route-hero .eyebrow { color:var(--accent-deep); }
+  .welcome-card .eyebrow-dot,.route-hero .eyebrow-dot { background:var(--accent); box-shadow:0 0 0 4px rgba(173,41,48,.1); }
+  .welcome-card h2 em { color:var(--accent); }
+  .welcome-card p { color:var(--muted); }
+  .welcome-tags span { color:#725a45; border-color:rgba(144,103,65,.17); background:rgba(187,146,93,.07); }
+  .welcome-seal { color:var(--accent-deep); border-color:rgba(173,41,48,.42); outline-color:rgba(187,146,93,.24); }
+  .welcome-seal span { color:var(--accent-deep); }
+  .route-hero { color:var(--ink); border:1px solid rgba(126,91,68,.12); background:linear-gradient(118deg,#fffdfa,#f6f0e7); box-shadow:var(--shadow-soft); }
+  .route-hero h2 span { color:var(--accent); }
+  .route-hero p { color:var(--muted); }
+  .msg.user { background:var(--accent); box-shadow:0 5px 14px rgba(125,29,37,.12); }
+  .msg.bot { background:rgba(255,253,250,.94); border-color:var(--line); }
+  .msg.bot.refused { border-left:3px solid #c39a67; opacity:1; }
+  .msg.bot.error { border-left:3px solid var(--accent); color:var(--accent-deep); background:#fff8f6; }
+  .loading { color:var(--muted); }
+  .msg.bot.loading::before { content:""; display:inline-block; width:12px; height:12px; margin-right:9px; vertical-align:-2px; border:1.5px solid rgba(173,41,48,.18); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite; }
+  .loading::after { content:""; animation:none; }
+  .cite { color:var(--accent-deep); text-decoration:underline; text-underline-offset:2px; }
+  .src { border-color:var(--line); box-shadow:none; }
+  .src .t { color:var(--accent-deep); }
+  .route-controls { border-color:var(--line); background:rgba(255,253,250,.8); box-shadow:var(--shadow-soft); }
+  .route-controls select,.route-multi-picker input,.audience-options select,.audience-options input,.stop .ck input,.admin-tools input,.admin-tools select { border-color:var(--line); border-radius:var(--radius-control); }
+  .route-controls .gen,.rd-head .actions button,#send { background:var(--accent); box-shadow:0 4px 12px rgba(125,29,37,.14); }
+  .route-card,.rd-head,.stop,.visit-card,.feedback-box,.admin-box { box-shadow:var(--shadow-soft); }
+  .route-card,.rd-head,.stop,.visit-card { border-color:var(--line); border-radius:var(--radius-card); }
+  .stop .task { background:#f7efe6; border-color:rgba(187,146,93,.16); }
+  .stop .task b,.stop .sn .idx { color:var(--accent-deep); }
+  .stop .sn .idx { background:var(--accent-soft); }
+  .route-link,.nav-action,.answer-tools button,.thread-toolbar button { transition:background .16s,border-color .16s,color .16s,transform .16s; }
+  .route-link:hover,.nav-action:hover,.answer-tools button:hover,.thread-toolbar button:hover { transform:translateY(-1px); }
+  button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,summary:focus-visible { outline:0; box-shadow:var(--focus-ring); }
+  .ui-icon { width:16px; height:16px; flex:none; display:inline-block; vertical-align:-3px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+  .visit-pin .ui-icon { width:18px; height:18px; }
+  .nav-action .ui-icon { width:13px; height:13px; }
+  .app-notice { position:fixed; right:22px; bottom:22px; z-index:80; max-width:min(420px,calc(100vw - 32px)); padding:12px 15px; border:1px solid rgba(173,41,48,.14); border-radius:13px; color:#71343a; background:rgba(255,253,250,.96); box-shadow:var(--shadow); font-size:12px; line-height:1.6; backdrop-filter:blur(16px); }
+  .app-notice[hidden] { display:none; }
+  .app-notice.success { border-color:rgba(83,125,81,.2); color:#4d694a; }
+  .route-via-options,.workbench-rail,.admin-box,.feedback-box { border-color:var(--line); }
+  .route-via-options button:focus-visible { outline:0; background:var(--accent-soft); }
+  .rec-error { padding:10px 11px; border:1px solid rgba(173,41,48,.1); border-radius:10px; color:#8b4c4e; background:#fff8f6; }
+  /* Quiet premium finish: fewer effects, clearer hierarchy, more deliberate space. */
+  :root {
+    --paper:#f4f3f0;
+    --card:#fff;
+    --accent:#a52b32;
+    --accent-deep:#7f2027;
+    --accent-soft:#f5eeeb;
+    --line:rgba(55,45,40,.12);
+    --muted:#77716c;
+    --gold:#aa8756;
+    --shadow:0 10px 28px rgba(38,31,27,.055);
+    --shadow-soft:0 3px 12px rgba(38,31,27,.035);
+    --radius-control:10px;
+    --radius-card:15px;
+    --radius-panel:18px;
+  }
+  body { background:var(--paper); letter-spacing:0; overflow-x:hidden; }
+  #chatPage,#routePage { flex:1 0 auto; min-height:auto; }
+  .workspace-layout { flex:1 0 auto; min-height:auto; }
+  .workspace-main { min-height:auto; }
+  .chat-thread { flex:none; min-height:42vh; overflow:visible; }
+  .route-main { overflow:visible; }
+  header { background:#81252b; box-shadow:0 1px 0 rgba(50,20,20,.12); backdrop-filter:none; }
+  .brand h1::before { background:#c8a875; }
+  main { padding-top:28px; }
+  .welcome-card { min-height:158px; padding:25px 30px; border-radius:16px; background:#fff; box-shadow:var(--shadow-soft); }
+  .welcome-card::after,.welcome-seal { display:none; }
+  .welcome-card h2,.route-hero h2 { letter-spacing:-.025em; font-weight:620; }
+  .welcome-card p { max-width:620px; line-height:1.75; }
+  .eyebrow { letter-spacing:.12em; }
+  .eyebrow-dot { box-shadow:none !important; }
+  .welcome-tags { gap:7px; }
+  .welcome-tags span { border-color:var(--line); background:#faf9f7; color:#6b625a; }
+  .prompt-label { margin-top:5px; }
+  .chips button,.starter-chips button { box-shadow:none; }
+  .chips button:hover,.starter-chips button:hover { transform:none; box-shadow:none; }
+  .msg { box-shadow:none; }
+  .msg.user { background:#a52b32; }
+  .msg.bot { background:#fff; }
+  .src { border-radius:10px; }
+  .workspace-layout { gap:18px; }
+  .workbench-rail { border-radius:16px; background:#fff; box-shadow:var(--shadow-soft); backdrop-filter:none; }
+  .rail-section { margin-top:14px; padding-top:13px; }
+  .rail-heading h2 { font-size:17px; }
+  .rail-status i { box-shadow:none; }
+  .rail-results .results-heading button { background:#f6f3f1; }
+  .thread-toolbar { color:#625b56; }
+  footer { padding-top:11px; }
+  #input { box-shadow:none; }
+  #input:focus { box-shadow:0 0 0 3px rgba(165,43,50,.09); }
+  #send,.route-controls .gen,.rd-head .actions button { background:#a52b32; box-shadow:none; }
+  #send:hover:not(:disabled) { transform:none; box-shadow:none; background:#86232a; }
+  .route-hero { padding:24px 28px; border-radius:16px; box-shadow:none; }
+  .route-controls { border-radius:15px; box-shadow:none; }
+  .route-card,.rd-head,.stop,.visit-card,.feedback-box,.admin-box { box-shadow:var(--shadow-soft); }
+  .route-card { border-left-width:2px; border-radius:14px; }
+  .route-card:hover { transform:none; box-shadow:var(--shadow-soft); }
+  .rd-head,.stop { border-radius:15px; }
+  .stop .task { background:#f7f4ef; }
+  .overlay { backdrop-filter:blur(6px); }
+  .visit-card { box-shadow:var(--shadow-soft); }
+  .app-notice { backdrop-filter:blur(8px); box-shadow:var(--shadow); }
+  .route-link:hover,.nav-action:hover,.answer-tools button:hover,.thread-toolbar button:hover { transform:none; }
+  .msg.bot { width:min(100%, 820px); max-width:100%; padding:22px 25px; border:1px solid rgba(55,45,40,.1); border-radius:16px; line-height:1.8; white-space:normal; font-size:14px; }
+  .msg.user { width:fit-content; max-width:min(78%, 620px); padding:10px 15px; border-radius:15px 15px 4px 15px; font-size:13.5px; line-height:1.65; white-space:pre-wrap; }
+  .answer-content { max-width:76ch; color:#342f2c; font-size:14px; line-height:1.9; overflow-wrap:anywhere; }
+  .answer-content p { margin:0 0 12px; }
+  .answer-content p:last-child { margin-bottom:0; }
+  .answer-content h3 { margin:19px 0 8px; color:#3b302d; font-size:14px; line-height:1.6; font-weight:650; }
+  .answer-content h3:first-child { margin-top:0; }
+  .answer-content strong { color:#39312d; font-weight:650; }
+  .answer-content ul,.answer-content ol { margin:5px 0 13px; padding-left:1.6em; }
+  .answer-content li { padding:2px 0 2px 3px; }
+  .answer-content li::marker { color:var(--accent); }
+  .answer-content code { padding:1px 5px; border-radius:5px; background:#f4f1ee; font: .92em ui-monospace,monospace; }
+  .answer-tools { display:flex; gap:8px; margin-top:16px; padding-top:11px; border-top:1px solid var(--line); }
+  .answer-tools button { border:1px solid var(--line); border-radius:8px; padding:6px 10px; color:#726a64; background:#fff; font-size:11px; cursor:pointer; }
+  .visit-services { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:15px; padding:0 18px 15px; }
+  .service-panel { min-width:0; overflow:hidden; border:1px solid var(--line); border-radius:12px; background:#fff; transition:border-color .18s ease,box-shadow .18s ease; }
+  .service-panel:hover { border-color:#dfd5cd; }
+  .service-panel > summary { display:flex; align-items:center; gap:10px; min-height:62px; padding:13px 15px; cursor:pointer; list-style:none; }
+  .service-panel > summary::-webkit-details-marker { display:none; }
+  .service-panel > summary b { flex:none; color:#37312e; font-size:14px; font-weight:650; }
+  .service-panel > summary span { margin-left:auto; color:var(--muted); font-size:11px; text-align:right; }
+  .service-panel > summary i { position:relative; flex:none; width:22px; height:22px; border:1px solid var(--line); border-radius:50%; color:var(--accent-deep); }
+  .service-panel > summary i::before,.service-panel > summary i::after { position:absolute; top:10px; left:6px; width:8px; height:1px; background:currentColor; content:""; }
+  .service-panel > summary i::after { transform:rotate(90deg); transition:transform .18s ease; }
+  .service-panel[open] { border-color:#e4d5ce; box-shadow:0 5px 18px rgba(79,47,37,.045); }
+  .service-panel[open] > summary { border-bottom:1px solid var(--line); }
+  .service-panel[open] > summary i::after { transform:rotate(0); }
+  .service-panel > .rec-body { padding:0 15px 13px; }
+  .service-heading { display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-bottom:7px; }
+  .service-heading b { color:#37312e; font-size:14px; font-weight:650; }
+  .service-heading span,.rec-summary { color:var(--muted); font-size:11px; }
+  .service-panel .rec-body { padding:0 15px 13px; }
+  .service-panel .rec-summary { display:flex; justify-content:space-between; gap:8px; margin:0 0 5px; }
+  .service-panel .rec-item { padding:10px 0 8px; }
+  .service-panel .rec-item-top { gap:4px; }
+  .service-panel .rec-name-wrap { align-items:flex-start; flex-direction:column; gap:2px; }
+  .service-panel .rec-item .n { max-width:100%; color:#443a35; font-size:13px; font-weight:600; white-space:normal; }
+  .service-panel .rec-item .d,.service-panel .rec-item .a { color:var(--muted); font-size:11px; }
+  .service-panel .rec-item .a { margin:4px 0 0; line-height:1.6; }
+  .poi-meta { display:flex; flex-wrap:wrap; gap:7px 14px; margin-top:7px; color:var(--muted); font-size:11px; }
+  .poi-meta b { color:#4f453f; font-weight:650; font-variant-numeric:tabular-nums; }
+  .poi-dishes { display:flex; align-items:flex-start; gap:7px; margin-top:6px; font-size:11px; line-height:1.7; }
+  .poi-dishes-label { flex:none; color:var(--muted); }
+  .poi-dish-list { display:flex; flex-wrap:wrap; gap:4px; }
+  .poi-dish { display:inline-block; padding:1px 7px; border-radius:999px; color:#735d44; background:#f6f2ec; }
+  .poi-dish-empty { color:#99918b; }
+  .service-panel .nav-action { flex:none; border:0; padding:3px 0 3px 5px; font-size:11px; }
+  .rec-more,.rec-retry { margin-top:7px; border:0; padding:3px 0; color:var(--accent-deep); background:transparent; font-size:11px; cursor:pointer; }
+  .rec-error { display:flex; align-items:flex-start; gap:5px; flex-wrap:wrap; padding:5px 0; border:0; background:transparent; font-size:11px; }
+  .visit-footnote { padding:0 18px 14px; color:#8b847e; font-size:10px; line-height:1.5; }
+  .chat-thread > .visit-card { align-self:stretch; width:100%; max-width:960px; margin:0 0 10px; }
+  .chat-thread > .visit-card .visit-services { grid-template-columns:repeat(2,minmax(0,1fr)); padding-inline:18px; }
+  @media (max-width:760px) {
+    .msg.bot { padding:16px; font-size:13.5px; }
+    .answer-content { font-size:13.5px; }
+    .chat-thread > .visit-card .visit-services { grid-template-columns:1fr; padding-inline:13px; }
+    .visit-services { grid-template-columns:1fr; padding-inline:13px; }
+    .visit-footnote { padding-inline:13px; }
+  }
+  @media (max-width:760px) {
+    main { padding-top:18px; }
+    .workspace-main .welcome-card { min-height:140px; }
+    .route-hero { padding:20px; }
+  }
+  @media (prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; } }
 </style>
 </head>
 <body>
 <header>
   <div class="brand">
     <h1>徽州问典</h1>
-    <span>江淮红色文化智能传承与乡村文旅赋能平台 · 合肥 芜湖 阜阳 淮南</span>
+    <span>徽州红色文化公益服务 · 四城试点，安徽多地扩展</span>
   </div>
   <div class="header-right">
     <div class="style-switch" id="styleSwitch">
-      <button data-style="guide" class="active">导游版</button>
-      <button data-style="scholar">学者版</button>
-      <button data-style="child">青少年版</button>
+      <button data-style="teacher" class="active" aria-label="研学教师版">研学教师</button>
+      <button data-style="tourist" aria-label="红色文化游客版">游客讲解</button>
+      <button data-style="promo" aria-label="基层文旅宣传助手版">宣传助手</button>
     </div>
     <nav class="page-nav">
-      <button id="navChat" class="active">💬 文化问答</button>
-      <button id="navRoute">🚩 红色筑梦</button>
+      <button id="navChat" class="active"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-2 2v-9.5A7.5 7.5 0 0 1 10.5 4H12a8 8 0 0 1 8 7.5Z"/></svg>文化问答</button>
+      <button id="navRoute"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 6 6-2 6 3 6-2v14l-6 2-6-3-6 2zM9 4v14m6-11v14"/></svg>红色筑梦</button>
+      <button id="navFeedback"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM15 3v5h5M9 12h7M9 16h7"/></svg>反馈审核</button>
     </nav>
   </div>
 </header>
 
 <div id="chatPage">
-<main id="chat">
-  <div class="hint">传承红色基因，让每一次提问都有出处 —— 试试「渡江战役发生在哪里？」「大通万人坑见证了什么？」</div>
-  <div class="chips" id="chips"></div>
-</main>
+  <div class="workspace-layout">
+    <section class="workspace-main" aria-label="文化问答工作区">
+      <div class="welcome-card">
+        <div class="welcome-copy">
+          <h2 id="welcomeTitle">为课堂备课，<em>让历史可讲</em></h2>
+          <p id="welcomeDescription">把可靠资料变成讲解要点、课堂问题与研学任务，带学生读懂徽州。</p>
+          <div class="welcome-tags" id="welcomeTags"><span>教学讲解</span><span>研学任务</span><span>文献溯源</span></div>
+        </div>
+        <div class="welcome-seal" aria-hidden="true"><span>红</span><i>RED<br>MEMORY</i></div>
+      </div>
+      <main id="chat" class="chat-thread" aria-live="polite" aria-label="问答记录">
+        <div class="thread-toolbar"><span>对话</span><button id="clearThread" type="button">清空会话</button></div>
+        <div id="emptyThread" class="empty-thread"><span class="empty-mark">问</span><b>从一个具体问题开始</b><small>答案会附上知识库出处；提到景点时，还可以继续查看周边和路线。</small></div>
+      </main>
+      <footer class="composer">
+        <textarea id="input" rows="1" placeholder="输入你的问题，回车发送…"></textarea>
+        <button id="send">发送</button>
+      </footer>
+    </section>
 
-<footer>
-  <textarea id="input" rows="1" placeholder="输入你的问题，回车发送…"></textarea>
-  <button id="send">发送</button>
-</footer>
+    <aside class="workbench-rail" aria-label="当前任务设置与快捷入口">
+      <div class="rail-fixed">
+      <div class="rail-heading"><div><small>当前工作台</small><h2 id="workbenchModeTitle">研学备课</h2></div><span class="rail-status"><i></i>资料可溯</span></div>
+      <p class="rail-description" id="promptHint">选一个教学任务，直接生成备课素材</p>
+      <section class="rail-section" id="teacherSection">
+        <div class="rail-section-title"><span>课堂设置</span><small>可选</small></div>
+        <div class="audience-options" id="teacherOptions"><select id="teacherAudience" aria-label="适用对象"><option>初中生</option><option>高中生</option><option>高校学生</option><option selected>通用</option></select><select id="teacherDuration" aria-label="讲解时长"><option value="10">10 分钟</option><option value="20" selected>20 分钟</option><option value="40">40 分钟</option><option value="60">60 分钟</option></select><input id="teacherGoal" maxlength="300" aria-label="教学目标" placeholder="教学目标（可选）"></div>
+      </section>
+      <section class="rail-section" id="promoSection">
+        <div class="rail-section-title"><span>素材类型</span><small>可选</small></div>
+        <div class="audience-options" id="promoOptions"><select id="promoFormat" aria-label="宣传素材类型"><option>景点简介</option><option>公众号推文</option><option>活动预告</option><option>30 秒短视频口播</option><option>讲解词</option><option>宣传海报标题与文案</option></select></div>
+      </section>
+      <section class="rail-section">
+        <div class="rail-section-title"><span>可以这样开始</span><small>快捷提问</small></div>
+        <div class="starter-chips" id="starterChips"></div>
+      </section>
+      <section class="rail-section landmark-section">
+        <div class="rail-section-title"><span>红色地标</span><button class="landmark-refresh" id="refreshLandmarks" type="button">换一批 ↻</button></div>
+        <p class="landmark-hint">点选后按当前模式生成讲解、导览或宣传内容。</p>
+        <div class="chips" id="chips"></div>
+      </section>
+      </div>
+      <section class="rail-results" id="railResults">
+        <div class="rail-section-title results-heading"><span>回答出处</span><button id="clearContext" type="button" title="清空对话和出处">清空</button></div>
+        <div class="rail-empty" id="contextEmpty">引用和知识库来源会整理在这里；周边推荐显示在对应回答下方。</div>
+        <div class="context-section" id="contextSection" style="display:none">
+        <div id="contextPanel"></div>
+        </div>
+      </section>
+      <div class="rail-footer"><span>公益演示 · AI 辅助参考，不替代场馆专业讲解</span><button id="feedbackOpen" type="button">资料纠错 / 功能建议</button></div>
+    </aside>
+  </div>
 </div>
 
 <div id="routePage" style="display:none">
   <main class="route-main">
+    <section class="route-hero">
+      <div class="eyebrow"><span class="eyebrow-dot"></span> RED JOURNEY · FIELD STUDY</div>
+      <h2>把历史，走成一段<span>自己的路</span></h2>
+      <p>沿着徽州红色地标，生成专属研学路线，边走边记录。</p>
+    </section>
     <div class="route-controls">
       <select id="citySel"></select>
       <select id="daysSel">
         <option value="1">1 天</option>
         <option value="2">2 天</option>
       </select>
-      <button id="genRoute" class="gen">🚩 生成研学路线</button>
+      <select id="routeStart" aria-label="路线起点"><option value="">起点不限</option></select>
+      <select id="routeEnd" aria-label="路线终点"><option value="">终点不限</option></select>
+      <div class="route-multi-picker" id="routeViaPicker">
+        <input id="routeViaSearch" type="search" autocomplete="off" placeholder="搜索必经景点（可多选）" aria-label="搜索必经景点">
+        <div id="routeViaOptions" class="route-via-options" role="listbox" hidden></div>
+        <div id="routeViaTags" class="route-via-tags" aria-live="polite"></div>
+      </div>
+      <button id="genRoute" class="gen"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 6 6-2 6 3 6-2v14l-6 2-6-3-6 2zM9 4v14m6-11v14"/></svg>生成路线</button>
+      <div class="route-context" id="routeContext">选择城市与天数，生成包含红色地标、站间交通和现场任务的研学路线。</div>
     </div>
     <div id="routeDetail"></div>
     <div id="routeList"></div>
   </main>
 </div>
 
-<div id="reportOverlay" class="overlay" style="display:none">
-  <div class="report-box">
-    <div class="report-head">
-      📋 青年红色筑梦之旅 · 实践报告
-      <span style="flex:1"></span>
-      <button id="copyReport">复制</button>
-      <button id="dlReport">下载 .md</button>
-      <button id="closeReport" class="danger">关闭</button>
-    </div>
-    <div id="reportText"></div>
-  </div>
+<div id="feedbackOverlay" class="overlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="feedbackTitle">
+  <form class="feedback-box" id="feedbackForm">
+    <div class="feedback-head"><div><small>HELP US IMPROVE</small><h2 id="feedbackTitle">留下一个改进线索</h2></div><button type="button" id="closeFeedback" aria-label="关闭">×</button></div>
+    <label for="feedbackCategory">反馈类型</label>
+    <select id="feedbackCategory" required>
+      <option value="history">史料内容纠错</option>
+      <option value="product">功能或体验建议</option>
+    </select>
+    <label for="feedbackMessage">具体内容</label>
+    <textarea id="feedbackMessage" rows="5" maxlength="2000" required placeholder="写明相关景点/回答、需要核实的内容或改进建议…"></textarea>
+    <div class="feedback-privacy">反馈保存在本项目本机的 data/feedback.json，不需要填写个人信息。</div>
+    <div class="feedback-actions"><span id="feedbackStatus" role="status"></span><button type="button" id="cancelFeedback">取消</button><button class="submit" type="submit">提交反馈</button></div>
+  </form>
 </div>
+
+<div id="adminOverlay" class="overlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="adminTitle">
+  <div class="admin-box"><div class="feedback-head"><div><small>LOCAL REVIEW</small><h2 id="adminTitle">本机反馈审核</h2></div><button type="button" id="closeAdmin" aria-label="关闭">×</button></div><div id="adminList">正在读取反馈…</div></div>
+</div>
+
+<div id="appNotice" class="app-notice" role="status" aria-live="polite" hidden></div>
 
 <script>
 const chat = document.getElementById("chat");
 const input = document.getElementById("input");
 const send = document.getElementById("send");
-let style = "guide";
+const ICON_PATHS = {
+  pin: '<path d="M20 10.2c0 5.1-8 11-8 11s-8-5.9-8-11a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/>',
+  route: '<path d="m3 6 6-2 6 3 6-2v14l-6 2-6-3-6 2zM9 4v14m6-11v14"/>',
+  doc: '<path d="M6 3h9l4 4v14H6zM15 3v5h5M9 12h7M9 16h7"/>',
+  external: '<path d="M7 17 17 7M8 7h9v9"/>',
+  check: '<path d="m5 12 4 4L19 6"/>'
+};
+function uiIcon(name) { return `<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON_PATHS[name] || ""}</svg>`; }
+let noticeTimer;
+function notify(message, kind = "error") {
+  const notice = document.getElementById("appNotice");
+  notice.textContent = message;
+  notice.classList.toggle("success", kind === "success");
+  notice.hidden = false;
+  clearTimeout(noticeTimer);
+  noticeTimer = setTimeout(() => { notice.hidden = true; }, 4200);
+}
+let style = "teacher";
+let contextSequence = 0;
+let activeContextId = "";
+let activeContextQuestion = "";
+
+try {
+  const saved = JSON.parse(localStorage.getItem("wendian-workbench") || "{}");
+  if (["teacher", "tourist", "promo"].includes(saved.style)) style = saved.style;
+  if (saved.audience) document.getElementById("teacherAudience").value = saved.audience;
+  if (saved.duration) document.getElementById("teacherDuration").value = String(saved.duration);
+  if (saved.format) document.getElementById("promoFormat").value = saved.format;
+  if (saved.learningGoal) document.getElementById("teacherGoal").value = saved.learningGoal;
+} catch {}
+
+const modeCopy = {
+  teacher: {
+    label: '研学备课',
+    title: '为课堂备课，<em>让历史可讲</em>',
+    description: '把可靠资料变成讲解要点、课堂问题与研学任务，带学生读懂徽州。',
+    tags: ['教学讲解', '研学任务', '文献溯源'],
+    hint: '选一个教学任务，直接生成备课素材',
+    placeholder: '试试：帮我设计一堂 20 分钟的渡江战役研学课…',
+    prompts: ['为初中生生成渡江战役讲解提纲', '给小甸集纪念园设计 3 个现场研学问题', '把包公故事整理成 5 分钟课堂讲解']
+  },
+  tourist: {
+    label: '游客讲解',
+    title: '沿着红色足迹，<em>读懂徽州</em>',
+    description: '从一处旧址、一段故事开始，轻松了解身边的红色历史与地方文化。',
+    tags: ['在地故事', '参观讲解', '可信出处'],
+    hint: '从一个现场问题开始，继续了解周边',
+    placeholder: '试试：第一次去渡江战役纪念馆，有哪些历史值得了解？',
+    prompts: ['渡江战役纪念馆讲述了什么', '安徽第一面党旗为什么在小甸村升起', '三河古镇有哪些值得了解的故事']
+  },
+  promo: {
+    label: '宣传创作',
+    title: '让好故事，<em>更容易被看见</em>',
+    description: '为基层文旅工作者整理讲解词、活动预告与传播文案，文字拿来就能改。',
+    tags: ['文案草拟', '活动宣传', '零硬件门槛'],
+    hint: '选一种传播素材，生成后可复制修改',
+    placeholder: '试试：为安徽第一面党旗纪念园写一段公众号推文…',
+    prompts: ['为安徽第一面党旗纪念园写一段景点简介', '起草一则红色研学活动预告，未知信息用待补充标记', '生成 30 秒红色景点短视频口播稿']
+  }
+};
+
+function savePreferences() {
+  try {
+    localStorage.setItem("wendian-workbench", JSON.stringify({ style,
+      audience: document.getElementById("teacherAudience").value,
+      duration: document.getElementById("teacherDuration").value,
+      format: document.getElementById("promoFormat").value,
+      learningGoal: document.getElementById("teacherGoal").value }));
+  } catch {}
+}
+
+function applyStyle(nextStyle, persist = true) {
+  style = nextStyle;
+  const copy = modeCopy[style];
+  document.getElementById("workbenchModeTitle").textContent = copy.label;
+  document.getElementById("teacherSection").style.display = style === "teacher" ? "block" : "none";
+  document.getElementById("promoSection").style.display = style === "promo" ? "block" : "none";
+  document.getElementById("welcomeTitle").innerHTML = copy.title;
+  document.getElementById("welcomeDescription").textContent = copy.description;
+  document.getElementById("welcomeTags").innerHTML = copy.tags.map(tag => `<span>${escapeHtml(tag)}</span>`).join("");
+  document.getElementById("promptHint").textContent = copy.hint;
+  document.getElementById("teacherOptions").style.display = style === "teacher" ? "flex" : "none";
+  document.getElementById("promoOptions").style.display = style === "promo" ? "flex" : "none";
+  input.placeholder = copy.placeholder;
+  renderQuickPrompts();
+  document.querySelectorAll("#styleSwitch button").forEach(b => b.classList.toggle("active", b.dataset.style === style));
+  if (persist) savePreferences();
+}
 
 document.getElementById("styleSwitch").addEventListener("click", e => {
   const btn = e.target.closest("button");
-  if (!btn) return;
-  style = btn.dataset.style;
-  document.querySelectorAll("#styleSwitch button").forEach(b => b.classList.toggle("active", b === btn));
+  if (btn) applyStyle(btn.dataset.style);
 });
+applyStyle(style, false);
+for (const id of ["teacherAudience", "teacherDuration", "promoFormat"]) {
+  document.getElementById(id).addEventListener("change", savePreferences);
+}
+document.getElementById("teacherGoal").addEventListener("input", savePreferences);
+
+function renderQuickPrompts() {
+  const box = document.getElementById("starterChips");
+  box.innerHTML = "";
+  modeCopy[style].prompts.forEach(prompt => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = prompt;
+    button.addEventListener("click", () => { input.value = prompt; ask(); });
+    box.appendChild(button);
+  });
+}
+renderQuickPrompts();
 
 function addMsg(text, cls) {
+  const empty = document.getElementById("emptyThread");
+  if (empty) empty.hidden = true;
+  document.querySelector(".workspace-main")?.classList.add("has-conversation");
   const div = document.createElement("div");
   div.className = "msg " + cls;
   div.textContent = text;
@@ -259,78 +905,213 @@ function addMsg(text, cls) {
 
 function renderSources(sources) {
   if (!sources || !sources.length) return;
+  const panel = getActiveContext();
+  document.getElementById("contextSection").style.display = "block";
   const box = document.createElement("div");
   box.className = "sources";
   sources.forEach(s => {
     const el = document.createElement("div");
     el.className = "src";
-    el.innerHTML = `<div class="t">[${s.cite_id}] ${escapeHtml(s.doc)} · 相关度 ${(s.dense_score ?? s.score ?? 0).toFixed(2)}</div><div class="s">${escapeHtml(s.text)}</div>`;
+    const provenance = [s.publisher, s.published_at, s.site, s.page ? `第 ${s.page} 页` : "", s.source_file ? `文件：${s.source_file}` : ""].filter(Boolean).join(" · ");
+    let sourceHref = "";
+    try { const u = new URL(s.source_url); if (u.protocol === "http:" || u.protocol === "https:") sourceHref = u.href; } catch {}
+    const sourceLink = sourceHref ? `<a href="${escapeHtml(sourceHref)}" target="_blank" rel="noopener noreferrer">查看原始来源</a>` : "";
+    el.innerHTML = `<div class="t">[${s.cite_id}] ${escapeHtml(s.doc)} · 相关度 ${(s.dense_score ?? s.score ?? 0).toFixed(2)}</div>${provenance ? `<div class="meta">${escapeHtml(provenance)}</div>` : ""}${sourceLink ? `<div>${sourceLink}</div>` : ""}<div class="s">${escapeHtml(s.text)}</div>`;
     el.addEventListener("click", () => el.classList.toggle("open"));
     box.appendChild(el);
   });
-  chat.appendChild(box);
-  chat.scrollTop = chat.scrollHeight;
+  panel.appendChild(box);
+}
+
+function startContext(question) {
+  activeContextId = `context-${++contextSequence}`;
+  activeContextQuestion = question || "本次探访";
+}
+
+function getActiveContext() {
+  const panel = document.getElementById("contextPanel");
+  document.getElementById("contextSection").style.display = "block";
+  document.getElementById("contextEmpty").hidden = true;
+  let group = [...panel.children].find(el => el.dataset.contextId === activeContextId);
+  if (!group) {
+    group = document.createElement("details");
+    group.open = true;
+    group.className = "context-entry";
+    group.dataset.contextId = activeContextId || `context-${++contextSequence}`;
+    const summary = document.createElement("summary");
+    summary.textContent = activeContextQuestion.slice(0, 52) || "本次探访";
+    const content = document.createElement("div");
+    content.className = "context-body";
+    group.append(summary, content);
+    panel.prepend(group);
+    activeContextId = group.dataset.contextId;
+  }
+  return group.querySelector(".context-body");
 }
 
 function escapeHtml(s) {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
-async function ask() {
-  const q = input.value.trim();
+function renderAnswer(answer, contextId) {
+  const inline = value => escapeHtml(value)
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, "$1<em>$2</em>")
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\[(\d+)\]/g, (m, n) => `<a class="cite" onclick="openSource(${+n - 1}, '${contextId}')" href="javascript:void(0)" aria-label="查看来源 ${n}">[${n}]</a>`);
+  const lines = String(answer || "").replace(/\r/g, "").split("\n");
+  const blocks = [];
+  let paragraph = [], listType = "", listItems = [];
+  const flushParagraph = () => {
+    if (paragraph.length) blocks.push(`<p>${paragraph.map(inline).join("<br>")}</p>`);
+    paragraph = [];
+  };
+  const flushList = () => {
+    if (!listItems.length) return;
+    blocks.push(`<${listType}>${listItems.map(item => `<li>${inline(item)}</li>`).join("")}</${listType}>`);
+    listItems = []; listType = "";
+  };
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (!line) { flushParagraph(); flushList(); continue; }
+    const heading = line.match(/^#{1,3}\s+(.+)$/) || line.match(/^\*\*(.+)\*\*$/);
+    if (heading) {
+      flushParagraph(); flushList();
+      blocks.push(`<h3>${inline(heading[1])}</h3>`);
+      continue;
+    }
+    const item = line.match(/^(?:[-*]\s+|\d+[.、]\s*)(.+)$/);
+    if (item) {
+      flushParagraph();
+      const nextType = /^\d/.test(line) ? "ol" : "ul";
+      if (listType && listType !== nextType) flushList();
+      listType = nextType; listItems.push(item[1]);
+      continue;
+    }
+    flushList(); paragraph.push(line);
+  }
+  flushParagraph(); flushList();
+  return `<div class="answer-content">${blocks.join("")}</div>`;
+}
+
+async function ask(questionOverride = null, requestOverride = null, isRetry = false) {
+  const q = questionOverride === null ? input.value.trim() : questionOverride.trim();
   if (!q || send.disabled) return;
-  input.value = "";
-  addMsg(q, "user");
+  startContext(q);
+  if (questionOverride === null) input.value = "";
+  resizeInput();
+  addMsg(isRetry ? `重新生成：${q}` : q, "user");
   const loading = addMsg("正在查阅红色文献与地方典籍", "bot loading");
   send.disabled = true;
+  const requestBody = requestOverride || { question: q, style, audience: $id("teacherAudience").value,
+    duration_minutes: +$id("teacherDuration").value, learning_goal: $id("teacherGoal").value,
+    content_format: $id("promoFormat").value };
   try {
     const res = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question: q, style })
+      body: JSON.stringify(requestBody)
     });
     const data = await res.json();
     loading.classList.remove("loading");
-    loading.textContent = data.answer;
-    // 把 [n] 引用转成可点击角标
-    loading.innerHTML = data.answer.replace(/\[(\d+)\]/g,
-      (m, n) => `<a class="cite" onclick="openSource(${+n - 1})" href="javascript:void(0)">[${n}]</a>`);
+    const answerContextId = activeContextId;
+    loading.innerHTML = renderAnswer(data.answer, answerContextId);
+    const tools = document.createElement("div");
+    tools.className = "answer-tools";
+    const copyButton = document.createElement("button");
+    copyButton.type = "button";
+    copyButton.textContent = "复制内容";
+    copyButton.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(data.answer);
+        copyButton.textContent = "已复制";
+        setTimeout(() => copyButton.textContent = "复制内容", 1400);
+      } catch { copyButton.textContent = "请手动选择复制"; }
+    });
+    tools.appendChild(copyButton);
+    const retryButton = document.createElement("button");
+    retryButton.type = "button";
+    retryButton.className = "retry";
+    retryButton.textContent = "重新生成";
+    retryButton.addEventListener("click", () => ask(q, requestBody, true));
+    tools.appendChild(retryButton);
+    loading.appendChild(tools);
     renderSources(data.sources);
     renderSpotsPanel(data.spots);
   } catch (err) {
     loading.classList.remove("loading");
+    loading.classList.add("error");
     loading.textContent = "出错了：" + err.message;
+    notify(`回答生成失败：${err.message}`);
   } finally {
     send.disabled = false;
     input.focus();
   }
 }
 
-function openSource(i) {
-  const boxes = chat.querySelectorAll(".sources .src");
+function openSource(i, contextId) {
+  const group = [...document.getElementById("contextPanel").children].find(el => el.dataset.contextId === contextId);
+  const boxes = group ? group.querySelectorAll(".sources .src") : [];
   if (boxes[i]) { boxes[i].classList.toggle("open"); boxes[i].scrollIntoView({ behavior: "smooth", block: "nearest" }); }
 }
 
+function resizeInput() {
+  input.style.height = "auto";
+  input.style.height = `${Math.min(input.scrollHeight, 120)}px`;
+}
+
+function clearConversation() {
+  if (send.disabled) return;
+  document.querySelector(".workspace-main")?.classList.remove("has-conversation");
+  chat.replaceChildren(document.querySelector(".thread-toolbar"), document.getElementById("emptyThread"));
+  document.getElementById("emptyThread").hidden = false;
+  document.getElementById("contextPanel").replaceChildren();
+  document.getElementById("contextSection").style.display = "none";
+  document.getElementById("contextEmpty").hidden = false;
+  contextSequence = 0;
+  activeContextId = "";
+  activeContextQuestion = "";
+  input.value = "";
+  resizeInput();
+  input.focus();
+}
+document.getElementById("clearThread").addEventListener("click", clearConversation);
+document.getElementById("clearContext").addEventListener("click", clearConversation);
+input.addEventListener("input", resizeInput);
+
 /* ===== 周边推荐（高德地图 LBS）===== */
+let spotCityMap = {};
+
 function renderSpotsPanel(spots) {
   if (!spots || !spots.length) return;
   spots.forEach(spot => {
     const card = document.createElement("div");
-    card.className = "rec-card";
+    card.className = "rec-card visit-card";
     card.innerHTML = `
-      <div class="rec-head">📍 ${escapeHtml(spot)}
-        <span class="btns">
-          <button data-kind="food">美食</button>
-          <button data-kind="hotel">住宿</button>
-        </span>
+      <div class="visit-head">
+        <div class="visit-title"><span class="visit-pin">${uiIcon("pin")}</span><div><small>继续安排这次探访</small><b>${escapeHtml(spot)}</b><span class="visit-city">${escapeHtml(spotCityMap[spot] || "徽州")}</span></div></div>
+        <button class="route-link" data-route="1" data-spot="${escapeHtml(spot)}">${uiIcon("route")}规划研学路线</button>
       </div>
-      <div class="rec-body"><div class="rec-error">点上方按钮查看周边推荐</div></div>`;
-    card.querySelectorAll(".rec-head button").forEach(btn => {
-      btn.addEventListener("click", () => loadRec(card, spot, btn.dataset.kind, btn));
+      <div class="visit-services">
+        <details class="service-panel" data-kind-panel="food">
+          <summary><b>附近餐饮</b><span data-kind-summary="food">顺路用餐 · 展开查看</span><i aria-hidden="true"></i></summary>
+          <div class="rec-body" data-kind-body="food"><div class="rec-empty">展开后查看附近餐饮、评分和特色菜。</div></div>
+        </details>
+        <details class="service-panel" data-kind-panel="hotel">
+          <summary><b>附近住宿</b><span data-kind-summary="hotel">行程留宿 · 展开查看</span><i aria-hidden="true"></i></summary>
+          <div class="rec-body" data-kind-body="hotel"><div class="rec-empty">展开后查看附近住宿、评分和价格参考。</div></div>
+        </details>
+      </div>
+      <div class="visit-footnote">商户与特色菜来自地图 POI 标注；评分、参考消费可能缺失或滞后，酒店参考价不等于实时房价。</div>`;
+    card.querySelector("[data-route]").addEventListener("click", () => openCityRoute(spotCityMap[spot] || "", spot));
+    card.setAttribute("aria-label", `${spot}周边餐饮与住宿推荐`);
+    card.querySelectorAll("[data-kind-panel]").forEach(panel => {
+      panel.addEventListener("toggle", () => {
+        if (panel.open) loadRec(card, spot, panel.dataset.kindPanel);
+      });
     });
     chat.appendChild(card);
   });
-  chat.scrollTop = chat.scrollHeight;
 }
 
 function fmtDist(m) {
@@ -338,57 +1119,110 @@ function fmtDist(m) {
   return m < 1000 ? `约 ${m} 米` : `约 ${(m / 1000).toFixed(1)} 公里`;
 }
 
-async function loadRec(card, spot, kind, btn) {
-  const body = card.querySelector(".rec-body");
-  card.querySelectorAll(".rec-head button").forEach(b => b.classList.toggle("active", b === btn));
-  body.innerHTML = `<div class="rec-error">正在通过高德地图查找…</div>`;
-  body.scrollIntoView({ behavior: "smooth", block: "nearest" });
+async function loadRec(card, spot, kind) {
+  const body = card.querySelector(`[data-kind-body="${kind}"]`);
+  if (card._recommendations && card._recommendations[kind]) {
+    renderRecommendation(card._recommendations[kind], kind, body);
+    return;
+  }
+  card._loading = card._loading || {};
+  if (card._loading[kind]) return;
+  card._loading[kind] = true;
+  body.innerHTML = `<div class="rec-loading"><span class="spinner"></span>正在查找${kind === "food" ? "附近餐饮" : "附近住宿"}…</div>`;
   try {
     const res = await fetch("/api/recommend", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ spot, kind })
     });
+    if (!res.ok) throw new Error(`服务返回 ${res.status}`);
     const data = await res.json();
     if (!data.ok) {
-      body.innerHTML = `<div class="rec-error">${escapeHtml(data.error)}</div>`;
+      body.innerHTML = `<div class="rec-error">${escapeHtml(data.error)}<button type="button" class="rec-retry">重试</button></div>`;
+      body.querySelector(".rec-retry").addEventListener("click", () => loadRec(card, spot, kind));
       return;
     }
-    let html = "";
-    if (data.map_url) html += `<img class="rec-map" src="${data.map_url}" alt="${escapeHtml(data.spot)}位置图">`;
-    if (data.intro) html += `<div class="rec-intro"><b>文化背景</b>（出处《${escapeHtml(data.intro.doc)}》）：${escapeHtml(data.intro.text.slice(0, 120))}…</div>`;
-    data.items.forEach(p => {
-      html += `<div class="rec-item">
-        <a class="n" href="${p.nav_url}" target="_blank" rel="noopener">${escapeHtml(p.name)} ↗</a>
-        <span class="d">${fmtDist(p.distance_m)}</span>
-        <div class="a">${escapeHtml(p.address || "")}${p.tel ? " · " + escapeHtml(p.tel) : ""}</div>
-        ${p.trace && p.trace.length ? `<details><summary>文化溯源</summary>${escapeHtml(p.trace[0].text.slice(0, 150))}…（出处《${escapeHtml(p.trace[0].doc)}》）</details>` : ""}
-      </div>`;
-    });
-    body.innerHTML = html;
+    card._recommendations = card._recommendations || {};
+    card._recommendations[kind] = data;
+    const summary = card.querySelector(`[data-kind-summary="${kind}"]`);
+    if (summary) summary.textContent = `${(data.items || []).length} 家 · ${kind === "food" ? "评分、人均与特色菜" : "评分与价格参考"}`;
+    renderRecommendation(data, kind, body);
   } catch (err) {
-    body.innerHTML = `<div class="rec-error">请求失败：${escapeHtml(err.message)}</div>`;
+    body.innerHTML = `<div class="rec-error">暂时无法获取推荐：${escapeHtml(err.message)}<button type="button" class="rec-retry">重试</button></div>`;
+    body.querySelector(".rec-retry").addEventListener("click", () => loadRec(card, spot, kind));
+  } finally {
+    card._loading[kind] = false;
   }
 }
+
+function renderRecommendation(data, kind, body, showAll = false) {
+  const label = kind === "food" ? "餐饮" : "住宿";
+  const items = data.items || [];
+  const radius = Number(data.radius_m) || 3000;
+  const radiusLabel = radius >= 1000 ? `约 ${(radius / 1000).toFixed(radius % 1000 ? 1 : 0)} 公里范围` : `约 ${radius} 米范围`;
+  const shown = showAll ? items : items.slice(0, 3);
+  let html = `<div class="rec-summary"><span>${escapeHtml(data.city || "景点周边")} · ${radiusLabel}</span><span>${items.length} 家</span></div>`;
+  if (!items.length) html += `<div class="rec-empty">暂时没有找到附近${label}，可以尝试地图搜索或更换景点。</div>`;
+  shown.forEach((p, i) => {
+    const nav = p.nav_url ? `<a class="nav-action" href="${escapeHtml(p.nav_url)}" target="_blank" rel="noopener">地图导航 ${uiIcon("external")}</a>` : "";
+    const rating = p.rating ? escapeHtml(p.rating) : "暂无数据";
+    const cost = p.cost ? `¥${escapeHtml(p.cost)}` : "暂无数据";
+    const priceLabel = kind === "food" ? "人均参考" : "价格参考";
+    const dishes = kind === "food" && p.tag
+      ? String(p.tag).split(/[，,、]/).map(x => x.trim()).filter(Boolean).slice(0, 5)
+          .map(x => `<span class="poi-dish">${escapeHtml(x)}</span>`).join("")
+      : `<span class="poi-dish-empty">暂无特色菜信息</span>`;
+    html += `<article class="rec-item">
+      <div class="rec-item-top"><div class="rec-name-wrap"><span class="n">${escapeHtml(p.name)}</span><span class="d">${fmtDist(p.distance_m)}</span></div>${nav}</div>
+      <div class="a">${escapeHtml(p.address || "地址暂缺")}${p.tel ? ` · ${escapeHtml(p.tel)}` : ""}</div>
+      <div class="poi-meta"><span>评分 <b>${rating}</b></span><span>${priceLabel} <b>${cost}</b></span></div>
+      ${kind === "food" ? `<div class="poi-dishes"><span class="poi-dishes-label">特色菜</span><span class="poi-dish-list">${dishes}</span></div>` : ""}
+    </article>`;
+  });
+  if (items.length > 3) html += `<button class="rec-more" type="button">${showAll ? "收起" : `查看全部 ${items.length} 家`}</button>`;
+  body.innerHTML = html;
+  const more = body.querySelector(".rec-more");
+  if (more) more.addEventListener("click", () => renderRecommendation(data, kind, body, !showAll));
+}
+
+/* 红色地标入口：少量轮换展示；所有地标仍可直接在问题中提及。 */
+let redSpotItems = [];
+let redSpotCursor = 0;
+const redSpotsPerPage = 3;
+function renderLandmarkSuggestions(advance = false) {
+  const box = document.getElementById("chips");
+  if (!redSpotItems.length) { box.style.display = "none"; return; }
+  if (advance) redSpotCursor = (redSpotCursor + redSpotsPerPage) % redSpotItems.length;
+  box.replaceChildren();
+  const shown = Array.from({ length: Math.min(redSpotsPerPage, redSpotItems.length) }, (_, i) => redSpotItems[(redSpotCursor + i) % redSpotItems.length]);
+  shown.forEach(s => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.innerHTML = `${uiIcon("pin")}${escapeHtml(s.name)}`;
+    b.classList.add("red");
+    b.addEventListener("click", () => {
+      const prompt = style === "teacher"
+        ? `请为${s.name}设计一份适合${$id("teacherAudience").value}的${$id("teacherDuration").value}分钟讲解，包含可靠史实、课堂提问和现场研学任务。`
+        : style === "promo"
+          ? `请为${s.name}撰写一份${$id("promoFormat").value}，依据可靠资料，未知信息请标注“待补充”。`
+          : `请为第一次到访的游客介绍${s.name}，讲清一段易懂的历史故事和现场值得关注的内容。`;
+      input.value = prompt;
+      ask();
+    });
+    box.appendChild(b);
+  });
+}
+
+document.getElementById("refreshLandmarks").addEventListener("click", () => renderLandmarkSuggestions(true));
 
 /* 景点快捷入口 */
 async function loadSpots() {
   try {
     const res = await fetch("/api/spots");
     const spots = await res.json();
-    const box = document.getElementById("chips");
-    if (!spots.length) { box.style.display = "none"; return; }
-    const redFirst = spots.filter(s => s.tag === "red").concat(spots.filter(s => s.tag !== "red"));
-    redFirst.slice(0, 10).forEach(s => {
-      const b = document.createElement("button");
-      b.textContent = `📍 ${s.name}`;
-      if (s.tag === "red") b.classList.add("red");
-      b.addEventListener("click", () => {
-        addMsg(`看看「${s.name}」周边`, "user");
-        renderSpotsPanel([s.name]);
-      });
-      box.appendChild(b);
-    });
+    spotCityMap = Object.fromEntries(spots.map(s => [s.name, s.city || ""]));
+    redSpotItems = spots.filter(s => s.tag === "red");
+    renderLandmarkSuggestions();
   } catch (e) { /* 静默 */ }
 }
 /* ===== 红色筑梦之旅：路线 / 打卡 / 实践报告 ===== */
@@ -400,11 +1234,78 @@ function showPage(which) {
   $id("routePage").style.display = isChat ? "none" : "flex";
   $id("navChat").classList.toggle("active", isChat);
   $id("navRoute").classList.toggle("active", !isChat);
+  $id("navFeedback").classList.remove("active");
   $id("styleSwitch").style.visibility = isChat ? "visible" : "hidden";
   if (!isChat) { loadCities(); loadRouteList(); }
 }
 $id("navChat").addEventListener("click", () => showPage("chat"));
 $id("navRoute").addEventListener("click", () => showPage("route"));
+$id("navFeedback").addEventListener("click", openAdmin);
+
+async function loadRouteSpots(city) {
+  const spots = await (await fetch("/api/spots")).json();
+  for (const id of ["routeStart", "routeEnd"]) {
+    const sel = $id(id), first = sel.options[0]; sel.replaceChildren(first);
+    spots.filter(s => s.city === city && s.tag === "red").forEach(s => {
+      const o = document.createElement("option"); o.value = s.name; o.textContent = s.name; sel.appendChild(o);
+    });
+  }
+  routeViaChoices = spots.filter(s => s.city === city && s.tag === "red").map(s => s.name);
+  selectedViaSpots = [];
+  $id("routeViaSearch").value = "";
+  renderViaPicker();
+}
+$id("routeViaSearch").addEventListener("focus", () => renderViaPicker($id("routeViaSearch").value));
+$id("routeViaSearch").addEventListener("input", () => renderViaPicker($id("routeViaSearch").value));
+$id("routeViaSearch").addEventListener("keydown", e => {
+  if (e.key === "Escape") $id("routeViaOptions").hidden = true;
+  if (e.key === "Enter") {
+    const first = $id("routeViaOptions").querySelector("button");
+    if (first) { e.preventDefault(); first.click(); }
+  }
+});
+$id("routeViaOptions").addEventListener("click", e => {
+  const button = e.target.closest("button[data-spot]");
+  if (!button || selectedViaSpots.includes(button.dataset.spot)) return;
+  selectedViaSpots.push(button.dataset.spot);
+  $id("routeViaSearch").value = "";
+  renderViaPicker();
+  $id("routeViaSearch").focus();
+});
+$id("routeViaTags").addEventListener("click", e => {
+  const button = e.target.closest("button[data-remove]");
+  if (!button) return;
+  selectedViaSpots = selectedViaSpots.filter(name => name !== button.dataset.remove);
+  renderViaPicker($id("routeViaSearch").value);
+});
+document.addEventListener("click", e => {
+  if (!$id("routeViaPicker").contains(e.target)) $id("routeViaOptions").hidden = true;
+});
+
+let routeViaChoices = [];
+let selectedViaSpots = [];
+function renderViaPicker(filter = "") {
+  const options = $id("routeViaOptions");
+  const tags = $id("routeViaTags");
+  const query = filter.trim().toLocaleLowerCase();
+  const matches = routeViaChoices.filter(name => !selectedViaSpots.includes(name) && name.toLocaleLowerCase().includes(query));
+  options.replaceChildren();
+  matches.forEach(name => {
+    const button = document.createElement("button");
+    button.type = "button"; button.dataset.spot = name; button.setAttribute("role", "option"); button.textContent = `＋ ${name}`;
+    button.addEventListener("pointerdown", e => e.preventDefault());
+    options.appendChild(button);
+  });
+  options.hidden = !filter && document.activeElement !== $id("routeViaSearch") || matches.length === 0;
+  tags.replaceChildren();
+  selectedViaSpots.forEach(name => {
+    const tag = document.createElement("span"); tag.className = "route-via-tag";
+    const label = document.createElement("span"); label.textContent = name;
+    const remove = document.createElement("button"); remove.type = "button"; remove.dataset.remove = name; remove.setAttribute("aria-label", `移除必经点 ${name}`); remove.textContent = "×";
+    tag.append(label, remove); tags.appendChild(tag);
+  });
+}
+$id("citySel").addEventListener("change", () => loadRouteSpots($id("citySel").value));
 
 async function loadCities() {
   const sel = $id("citySel");
@@ -417,7 +1318,20 @@ async function loadCities() {
       o.textContent = `${c.city}（红色景点 ${c.red_count} 处）`;
       sel.appendChild(o);
     });
+    if (sel.value) await loadRouteSpots(sel.value);
   } catch (e) { /* 静默 */ }
+}
+
+async function openCityRoute(city, spot) {
+  await loadCities();
+  if (city) $id("citySel").value = city;
+  if ($id("citySel").value) await loadRouteSpots($id("citySel").value);
+  if (spot) $id("routeStart").value = spot;
+  $id("routeContext").textContent = spot
+    ? `已从「${spot}」接续规划：路线按${city}的红色地标编排，包含站点任务与站间交通信息。`
+    : "路线按所选城市编排，包含红色地标、站点任务与站间交通信息。";
+  showPage("route");
+  $id("routePage").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 $id("genRoute").addEventListener("click", async () => {
@@ -428,16 +1342,26 @@ $id("genRoute").addEventListener("click", async () => {
   try {
     const d = await (await fetch("/api/routes/generate", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ city, days: +$id("daysSel").value })
+      body: JSON.stringify({ city, days: +$id("daysSel").value, start_spot: $id("routeStart").value,
+        end_spot: $id("routeEnd").value, via_spots: [...selectedViaSpots] })
     })).json();
-    if (!d.ok) { alert(d.error); return; }
+    if (!d.ok) { notify(d.error); return; }
     await loadRouteList();
     openRoute(d.route.id);
-  } finally { btn.disabled = false; btn.textContent = "🚩 生成研学路线"; }
+  } catch (err) { notify(`路线生成失败：${err.message}`); }
+  finally { btn.disabled = false; btn.innerHTML = `${uiIcon("route")}生成路线`; }
 });
 
 async function loadRouteList() {
-  const d = await (await fetch("/api/routes")).json();
+  let d;
+  try {
+    const res = await fetch("/api/routes");
+    if (!res.ok) throw new Error(`服务返回 ${res.status}`);
+    d = await res.json();
+  } catch (err) {
+    notify(`路线列表加载失败：${err.message}`);
+    return;
+  }
   const box = $id("routeList");
   box.innerHTML = d.routes.length
     ? `<div class="hint" style="align-self:flex-start">我的研学路线（点击进入打卡）：</div>`
@@ -445,7 +1369,7 @@ async function loadRouteList() {
   d.routes.forEach(r => {
     const el = document.createElement("div");
     el.className = "route-card";
-    el.innerHTML = `<div class="n">🚩 ${escapeHtml(r.name)}</div>
+    el.innerHTML = `<div class="n">${uiIcon("route")}${escapeHtml(r.name)}</div>
       <div class="meta">${escapeHtml(r.city)} · ${r.days} 天 · ${r.stop_count} 站 · 生成于 ${escapeHtml(r.created)}</div>
       <div class="s">${escapeHtml(r.summary)}</div>`;
     el.addEventListener("click", () => openRoute(r.id));
@@ -456,12 +1380,16 @@ async function loadRouteList() {
 let currentRoute = null;
 
 async function openRoute(id) {
-  const d = await (await fetch(`/api/routes/${id}`)).json();
-  if (!d.ok) { alert(d.error); return; }
-  currentRoute = d.route;
-  renderRoute(d.route, d.checkins || {});
-  $id("routeDetail").style.display = "flex";
-  $id("routeDetail").scrollIntoView({ behavior: "smooth" });
+  try {
+    const res = await fetch(`/api/routes/${id}`);
+    if (!res.ok) throw new Error(`服务返回 ${res.status}`);
+    const d = await res.json();
+    if (!d.ok) { notify(d.error); return; }
+    currentRoute = d.route;
+    renderRoute(d.route, d.checkins || {});
+    $id("routeDetail").style.display = "flex";
+    $id("routeDetail").scrollIntoView({ behavior: "smooth" });
+  } catch (err) { notify(`路线详情加载失败：${err.message}`); }
 }
 
 function fmtLeg(l) {
@@ -475,19 +1403,25 @@ function fmtLeg(l) {
 function renderRoute(r, ck) {
   const doneCount = r.stops.filter(s => ck[s.name] && ck[s.name].done).length;
   const parts = [`<div class="rd-head">
-      <h2>🚩 ${escapeHtml(r.name)}</h2>
+      <h2>${uiIcon("route")}${escapeHtml(r.name)}</h2>
       <div class="sum">${escapeHtml(r.summary)}</div>
       <div class="actions">
         <span class="progress">打卡进度：${doneCount}/${r.stops.length}</span>
-        <button id="genReportBtn">📋 生成实践报告</button>
         <button id="backListBtn">← 返回路线列表</button>
       </div>
     </div>`];
+  if (r.map_url && r.stops.length) {
+    parts.push(`<section class="route-map-card" aria-label="研学路线地图">
+      <div class="route-map-head"><div class="route-map-title"><small>Route overview</small><b>点位与行进路线</b></div><span class="route-map-hint">编号对应站点顺序，红线连接各站；下方查看分段距离与交通方式</span></div>
+      <div class="route-map-image"><img src="${escapeHtml(r.map_url)}" alt="${escapeHtml(r.name)}路线地图"><div class="route-map-error" hidden>地图暂时无法加载，请稍后重试；下方仍可查看站点顺序与交通信息。</div></div>
+      <div class="route-map-legend">${r.stops.map((s, i) => `<button type="button" class="route-map-stop" data-map-stop="${i}"><i>${i + 1}</i><span>${escapeHtml(s.name)}</span><small>查看站点 ↓</small></button>`).join("")}</div>
+    </section>`);
+  }
   r.stops.forEach((s, i) => {
     const c = ck[s.name] || {};
     parts.push(`<div class="stop ${c.done ? "done" : ""}" data-spot="${escapeHtml(s.name)}">
       <div class="sn"><span class="idx">${i + 1}</span><b>${escapeHtml(s.name)}</b>
-        <span class="done-mark">✔ 已打卡</span></div>
+        <span class="done-mark">${uiIcon("check")}已打卡</span></div>
       <div class="why">入选理由：${escapeHtml(s.why)}</div>
       <div class="task"><b>研学任务</b>：${escapeHtml(s.task)}</div>
       ${s.intro_text ? `<div class="intro">文化背景（出处《${escapeHtml(s.intro_doc)}》）：${escapeHtml(s.intro_text)}…</div>` : ""}
@@ -500,65 +1434,104 @@ function renderRoute(r, ck) {
   });
   const det = $id("routeDetail");
   det.innerHTML = parts.join("");
+  const mapImage = det.querySelector(".route-map-image img");
+  if (mapImage) mapImage.addEventListener("error", () => {
+    mapImage.hidden = true;
+    const message = mapImage.nextElementSibling;
+    if (message) message.hidden = false;
+  }, { once:true });
+  det.querySelectorAll("[data-map-stop]").forEach(button => button.addEventListener("click", () => {
+    det.querySelectorAll(".stop")[Number(button.dataset.mapStop)]?.scrollIntoView({ behavior:"smooth", block:"center" });
+  }));
   det.querySelectorAll(".stop").forEach(stopEl => {
     const spot = stopEl.dataset.spot;
     const btn = stopEl.querySelector(".ck button");
     const input = stopEl.querySelector(".ck input");
     btn.addEventListener("click", async () => {
       const done = btn.dataset.done === "1";
-      const d = await (await fetch("/api/checkin", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ route_id: currentRoute.id, spot, done, note: input.value.trim() })
-      })).json();
-      if (!d.ok) { alert(d.error); return; }
-      openRoute(currentRoute.id);
+      btn.disabled = true;
+      try {
+        const res = await fetch("/api/checkin", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ route_id: currentRoute.id, spot, done, note: input.value.trim() })
+        });
+        if (!res.ok) throw new Error(`服务返回 ${res.status}`);
+        const d = await res.json();
+        if (!d.ok) { notify(d.error); return; }
+        await openRoute(currentRoute.id);
+      } catch (err) { notify(`打卡失败：${err.message}`); }
+      finally { btn.disabled = false; }
     });
   });
   $id("backListBtn").addEventListener("click", () => {
     det.style.display = "none";
     loadRouteList();
   });
-  $id("genReportBtn").addEventListener("click", genReport);
 }
 
-async function genReport() {
-  const btn = $id("genReportBtn");
-  btn.disabled = true; btn.textContent = "正在撰写报告…";
+function closeFeedback() { $id("feedbackOverlay").style.display = "none"; }
+async function openAdmin() {
+  showPage("chat");
+  $id("adminOverlay").style.display = "flex";
+  const box = $id("adminList"); box.textContent = "正在读取反馈…";
   try {
-    const d = await (await fetch("/api/report", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ route_id: currentRoute.id })
-    })).json();
-    if (!d.ok) { alert(d.error); return; }
-    $id("reportText").innerHTML = mdLite(d.report);
-    $id("reportOverlay").style.display = "flex";
-  } finally { btn.disabled = false; btn.textContent = "📋 生成实践报告"; }
+    const res = await fetch("/api/admin/feedback"), data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "读取失败");
+    if (!data.items.length) { box.innerHTML = '<div class="hint">暂无反馈记录。</div>'; return; }
+    box.innerHTML = data.items.map(item => `<article class="admin-item" data-id="${escapeHtml(item.id)}"><div><b>${item.category === "history" ? "史料纠错" : "功能建议"}</b> · ${escapeHtml(item.submitted_at || "")} · ${escapeHtml(({new:"待处理",verified:"已核实",actioned:"已处理",rejected:"不采纳"})[item.status || "new"] || "待处理")}</div><p>${escapeHtml(item.message)}</p><div class="admin-tools"><select aria-label="审核状态"><option value="new">待处理</option><option value="verified">已核实</option><option value="actioned">已处理</option><option value="rejected">不采纳</option></select><input maxlength="500" placeholder="处理备注" value="${escapeHtml(item.review_note || "")}"><button type="button">保存状态</button><small role="status"></small></div></article>`).join("");
+    box.querySelectorAll(".admin-item").forEach(el => {
+      const item = data.items.find(x => x.id === el.dataset.id);
+      const select = el.querySelector("select"); select.value = item.status || "new";
+      el.querySelector("button").addEventListener("click", async () => {
+        const status = el.querySelector("small"); status.textContent = "保存中…";
+        try {
+          const r = await fetch(`/api/admin/feedback/${encodeURIComponent(item.id)}`, {method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({status:select.value,review_note:el.querySelector("input").value})});
+          const result = await r.json(); if (!r.ok) throw new Error(result.detail || "保存失败");
+          status.textContent = "已保存";
+        } catch (err) { status.textContent = err.message; }
+      });
+    });
+  } catch (err) { box.textContent = `${err.message}（审核接口仅允许本机访问）`; }
 }
-
-function mdLite(md) {
-  return escapeHtml(md)
-    .replace(/^# (.+)$/gm, "\n<b>$1</b>\n")
-    .replace(/^## (.+)$/gm, "\n<b>$1</b>\n")
-    .replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
-}
-
-$id("closeReport").addEventListener("click", () => $id("reportOverlay").style.display = "none");
-$id("copyReport").addEventListener("click", () => {
-  navigator.clipboard.writeText($id("reportText").innerText);
-  $id("copyReport").textContent = "已复制 ✓";
-  setTimeout(() => $id("copyReport").textContent = "复制", 1500);
+$id("closeAdmin").addEventListener("click", () => $id("adminOverlay").style.display = "none");
+$id("adminOverlay").addEventListener("click", e => { if (e.target === $id("adminOverlay")) $id("adminOverlay").style.display = "none"; });
+$id("feedbackOpen").addEventListener("click", () => {
+  $id("feedbackStatus").textContent = "";
+  $id("feedbackOverlay").style.display = "flex";
+  $id("feedbackMessage").focus();
 });
-$id("dlReport").addEventListener("click", () => {
-  const blob = new Blob([$id("reportText").innerText], { type: "text/markdown;charset=utf-8" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = `红色筑梦实践报告-${(currentRoute && currentRoute.name) || "route"}.md`;
-  a.click();
+$id("closeFeedback").addEventListener("click", closeFeedback);
+$id("cancelFeedback").addEventListener("click", closeFeedback);
+$id("feedbackOverlay").addEventListener("click", e => { if (e.target === $id("feedbackOverlay")) closeFeedback(); });
+$id("feedbackForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const submit = $id("feedbackForm").querySelector("button.submit");
+  const status = $id("feedbackStatus");
+  const message = $id("feedbackMessage").value.trim();
+  if (!message) { status.textContent = "请先填写具体内容。"; status.style.color = "var(--accent)"; return; }
+  submit.disabled = true; submit.textContent = "提交中…"; status.textContent = "";
+  try {
+    const res = await fetch("/api/feedback", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ category: $id("feedbackCategory").value, message })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error || data.detail || "提交失败，请稍后重试。");
+    status.style.color = "#34724b";
+    status.textContent = "已保存，感谢你帮助我们改进。";
+    $id("feedbackForm").reset();
+    setTimeout(closeFeedback, 1100);
+  } catch (err) {
+    status.style.color = "var(--accent)";
+    status.textContent = err.message;
+  } finally {
+    submit.disabled = false; submit.textContent = "提交反馈";
+  }
 });
 
 loadSpots();
 
-send.addEventListener("click", ask);
+send.addEventListener("click", () => ask());
 input.addEventListener("keydown", e => {
   if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); ask(); }
 });

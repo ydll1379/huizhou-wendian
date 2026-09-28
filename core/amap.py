@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import os
 import time
+from urllib.parse import urlencode
 
 import requests
 
@@ -76,17 +77,23 @@ class AmapClient:
         return None
 
     def around(self, location: str, typecode: str, limit: int, radius: int) -> list[dict]:
-        """周边搜索：返回 [{'name','address','location','tel'}]"""
+        """周边搜索，带回评分、人均消费及餐饮特色菜等扩展字段。"""
         data = self._get("/place/around", location=location, types=typecode,
                          radius=radius, offset=max(limit, 10), page=1,
-                         sortrule="distance")
+                         sortrule="distance", extensions="all")
         out = []
         for poi in data.get("pois", [])[:limit]:
+            biz_ext = poi.get("biz_ext") or {}
+            if not isinstance(biz_ext, dict):
+                biz_ext = {}
             out.append({
                 "name": poi.get("name", ""),
                 "address": poi.get("address") or "",
                 "location": poi.get("location", ""),
                 "tel": poi.get("tel") or "",
+                "rating": biz_ext.get("rating") or "",
+                "cost": biz_ext.get("cost") or "",
+                "tag": poi.get("tag") or "",
             })
         return out
 
@@ -94,6 +101,42 @@ class AmapClient:
         """静态地图图片 URL（景点打红点）"""
         return (f"{self.base}/staticmap?location={location}&zoom=14&size=640*300"
                 f"&scale=2&markers=mid,0xD8432C,:{location}&key={self.key}")
+
+    def route_map_url(self, stops: list[dict], legs: list[dict]) -> str:
+        """生成含顺序编号站点与真实站间轨迹的静态地图。"""
+        if not self.ready or not stops:
+            return ""
+        locations = [s.get("location", "") for s in stops]
+        valid_locations = [p for p in locations if "," in p]
+        if not valid_locations:
+            return ""
+        markers = "|".join(
+            f"mid,0xAD2930,{i + 1}:{location}"
+            for i, location in enumerate(locations[:10]) if "," in location
+        )
+        route_points = []
+        for i in range(len(stops) - 1):
+            leg = legs[i] if i < len(legs) else {}
+            polyline = leg.get("polyline", "")
+            points = [p for p in polyline.split(";") if "," in p] if polyline else []
+            if not points:
+                points = [locations[i], locations[i + 1]]
+            for point in points:
+                if not route_points or point != route_points[-1]:
+                    route_points.append(point)
+        # 控制图片 URL 长度，同时保留路线形状与全部站点端点。
+        if len(route_points) > 100:
+            last = len(route_points) - 1
+            route_points = [route_points[round(i * last / 99)] for i in range(100)]
+        params = {
+            "size": "1000*440",
+            "scale": 2,
+            "markers": markers,
+            "key": self.key,
+        }
+        if len(route_points) > 1:
+            params["paths"] = f"7,0xAD2930,0.9,,:{';'.join(route_points)}"
+        return f"{self.base}/staticmap?{urlencode(params)}"
 
     def direction(self, origin: str, destination: str, mode: str = "driving") -> dict | None:
         """路径规划：返回 {'distance_m', 'duration_s', 'mode'}，失败返回 None"""
@@ -108,8 +151,13 @@ class AmapClient:
         if not routes:
             return None
         p = routes[0]
+        points = []
+        for step in p.get("steps", []):
+            points.extend(x for x in step.get("polyline", "").split(";") if "," in x)
+        polyline = ";".join(x for i, x in enumerate(points) if i == 0 or x != points[i - 1])
         return {
             "distance_m": round(float(p.get("distance", 0))),
             "duration_s": round(float(p.get("duration", 0))),
             "mode": mode,
+            "polyline": polyline,
         }

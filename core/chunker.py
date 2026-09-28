@@ -4,6 +4,7 @@
 - 对长段落用滑动窗口在句子边界处切分，带 overlap，避免切断语义。
 """
 import re
+from typing import Optional
 
 HEADING_RE = re.compile(r"^(#{1,4})\s+(.+)$|^【(.+?)】\s*$")
 
@@ -14,7 +15,7 @@ def _split_sentences(text: str) -> list[str]:
     return [p.strip() for p in parts if p.strip()]
 
 
-def chunk_document(title: str, text: str, max_chars: int, overlap: int) -> list[dict]:
+def chunk_document(title: str, text: str, max_chars: int, overlap: int, metadata: Optional[dict] = None) -> list[dict]:
     """返回 [{'title': 文档标题, 'text': 块文本, 'doc': 文档名}]"""
     lines = text.splitlines()
     chunks: list[dict] = []
@@ -25,7 +26,7 @@ def chunk_document(title: str, text: str, max_chars: int, overlap: int) -> list[
         nonlocal current
         body = "".join(current).strip()
         if body:
-            chunks.append({"title": current_heading, "text": body, "doc": title})
+            chunks.append({"title": current_heading, "text": body, "doc": title, **(metadata or {})})
         current = []
 
     for line in lines:
@@ -47,10 +48,10 @@ def chunk_document(title: str, text: str, max_chars: int, overlap: int) -> list[
         buf = ""
         for sent in sentences:
             if buf and len(buf) + len(sent) > max_chars:
-                result.append({"title": ch["title"], "text": buf, "doc": ch["doc"]})
+                result.append({**ch, "text": buf})
                 # overlap：保留上一块末尾若干字
                 buf = buf[-overlap:] if overlap else ""
             buf += sent
         if buf:
-            result.append({"title": ch["title"], "text": buf, "doc": ch["doc"]})
+            result.append({**ch, "text": buf})
     return result

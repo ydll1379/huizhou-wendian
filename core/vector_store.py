@@ -5,6 +5,7 @@
 """
 import json
 from pathlib import Path
+from typing import Optional
 
 import numpy as np
 
@@ -14,7 +15,7 @@ class VectorStore:
         self.kb_dir = Path(kb_dir)
         self.kb_dir.mkdir(parents=True, exist_ok=True)
         self.chunks: list[dict] = []
-        self.embeddings: np.ndarray | None = None
+        self.embeddings: Optional[np.ndarray] = None
 
     @property
     def size(self) -> int:

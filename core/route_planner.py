@@ -51,24 +51,36 @@ class RoutePlanner:
         self.reports_dir = root / "data" / "reports"
 
     # ---------- 路线生成 ----------
-    def _candidates(self, city: str, limit: int = 6) -> list[tuple[str, dict]]:
+    def _candidates(self, city: str, limit: int = 6, required: list[str] | None = None) -> list[tuple[str, dict]]:
         cands = [(n, m) for n, m in self.spots.items() if m.get("city") == city]
         cands.sort(key=lambda x: 0 if x[1].get("tag") == "red" else 1)
-        return cands[:limit]
+        required = list(dict.fromkeys(required or []))
+        by_name = dict(cands)
+        missing = [n for n in required if n not in by_name]
+        if missing:
+            raise RouteError(f"指定景点不属于{city}已收录景点：{'、'.join(missing)}")
+        chosen = [(n, by_name[n]) for n in required]
+        chosen.extend((n, m) for n, m in cands if n not in required and len(chosen) < limit)
+        return chosen
 
     def _kb_intro(self, name: str) -> tuple[str, str]:
         """知识库溯源：返回 (文档名, 摘要)"""
+        min_score = (self.cfg.get("thresholds") or {}).get("route_intro_min_score", 0.4)
         try:
             hits = self.rag.retriever.retrieve(name, 2)
         except Exception:
             return "", ""
         for h in hits:
-            if h.get("dense_score", 0) >= 0.4:
+            if h.get("dense_score", 0) >= min_score:
                 return h["doc"], h["text"][:100]
         return "", ""
 
-    def generate(self, city: str, days: int = 1) -> dict:
-        cands = self._candidates(city)
+    def generate(self, city: str, days: int = 1, start_spot: str = "", end_spot: str = "", via_spots: list[str] | None = None) -> dict:
+        via_spots = list(dict.fromkeys(via_spots or []))
+        required = [n for n in [start_spot, *via_spots, end_spot] if n]
+        if len(required) > 6:
+            raise RouteError("起点、终点与必经景点合计最多 6 处。")
+        cands = self._candidates(city, required=required)
         if not cands:
             raise RouteError(f"暂未收录 {city} 的景点，无法生成路线。")
         if not self.amap.ready:
@@ -91,6 +103,9 @@ class RoutePlanner:
                     "address": found["address"], "amap_name": found["name"],
                     "intro_doc": doc, "intro_text": text,
                 })
+        missing_required = [name for name in required if name not in {s["name"] for s in located}]
+        if missing_required:
+            raise RouteError(f"指定景点未能在地图服务中定位：{'、'.join(missing_required)}。请调整地点后重试。")
         if not located:
             raise RouteError(f"{city} 的景点在高德地图上定位失败，无法编排路线。")
 
@@ -99,12 +114,15 @@ class RoutePlanner:
             {"name": s["name"], "intro": s["intro_text"] or "（知识库暂无详细介绍）"}
             for s in located
         ]
+        order_hint = ""
+        if required:
+            order_hint = f"路线必须包含指定站点并遵守顺序：起点 {start_spot or '不限'}；必经点依次为 {'、'.join(via_spots) or '无'}；终点 {end_spot or '不限'}。"
         system = (
-            "你是「青年红色筑梦之旅」研学路线策划师，熟悉江淮红色历史。"
+            "你是「青年红色筑梦之旅」研学路线策划师，熟悉徽州红色历史。"
             "根据给定的候选景点，为指定城市编排一条研学路线：合理排序（兼顾主题逻辑与地理顺路）、"
             "为每个站点写一句选入理由和一项可现场完成的研学任务（如观察、提问、访谈、打卡答题）。"
             "涉及革命历史与英烈人物表述必须庄重准确。"
-            f"路线为期 {days} 天。输出 JSON："
+            f"路线为期 {days} 天。{order_hint} 输出 JSON："
             '{"name": 路线名(15字内), "summary": 路线主题说明(80字内), '
             '"stops": [{"name": 必须从候选景点中选取, "why": 选入理由(50字内), "task": 研学任务(40字内)}]}'
         )
@@ -121,8 +139,17 @@ class RoutePlanner:
             if not base:
                 continue
             stops.append({**base, "why": st.get("why", ""), "task": st.get("task", "")})
-        if not stops:
+        if not stops and not required:
             raise RouteError("路线编排结果异常，请重试。")
+        # API 调用结果可能漏站或调整顺序，约束项始终由后端确保存在且位置正确。
+        stop_by_name = {s["name"]: s for s in stops}
+        located_by_name = {s["name"]: s for s in located}
+        for name in required:
+            stop_by_name.setdefault(name, {**located_by_name[name], "why": "按行程要求纳入", "task": "观察现场并记录与主题相关的发现。"})
+        ordered_required = list(dict.fromkeys(([start_spot] if start_spot else []) + via_spots + ([end_spot] if end_spot else [])))
+        if ordered_required:
+            remainder = [s for s in stops if s["name"] not in ordered_required]
+            stops = [stop_by_name[n] for n in ordered_required] + remainder
 
         # 站间交通段（高德路径规划；短途步行、长途驾车）
         legs = []
@@ -140,6 +167,7 @@ class RoutePlanner:
             "name": plan.get("name", f"{city}红色研学路线"),
             "city": city,
             "days": days,
+            "constraints": {"start_spot": start_spot or "", "end_spot": end_spot or "", "via_spots": via_spots},
             "summary": plan.get("summary", ""),
             "created": time.strftime("%Y-%m-%d %H:%M"),
             "stops": stops,
@@ -148,6 +176,8 @@ class RoutePlanner:
         routes = self.routes_store.read()
         routes[route["id"]] = route
         self.routes_store.write(routes)
+        # Keep the Web Service key in the response URL only, never in routes.json.
+        route["map_url"] = self.amap.route_map_url(stops, legs)
         return route
 
     # ---------- 打卡 ----------
@@ -157,13 +187,19 @@ class RoutePlanner:
             {"id": r["id"], "name": r["name"], "city": r["city"], "days": r["days"],
              "summary": r["summary"], "created": r["created"],
              "stop_count": len(r["stops"])}
-            for r in sorted(routes.values(), key=lambda x: -x["id"])
+            for r in sorted(
+                routes.values(),
+                key=lambda x: (x.get("created", ""), str(x.get("id", ""))),
+                reverse=True,
+            )
         ]
 
     def get_route(self, route_id: str) -> dict:
         route = self.routes_store.read().get(route_id)
         if not route:
             raise RouteError("路线不存在，请重新生成。")
+        if not route.get("map_url"):
+            route["map_url"] = self.amap.route_map_url(route.get("stops", []), route.get("legs", []))
         return route
 
     def checkin(self, route_id: str, spot: str, done: bool, note: str = "") -> dict:

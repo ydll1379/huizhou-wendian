@@ -1,6 +1,6 @@
 # 徽州问典
 
-**江淮红色文化智能传承与乡村文旅赋能平台**
+**徽州红色文化智能传承与乡村文旅赋能平台**
 
 [![Python](https://img.shields.io/badge/Python-3.9+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
@@ -8,7 +8,7 @@
 
 > 让每一次提问都有出处，让每一次行走都有收获。
 
-通用大模型讲红色历史容易"一本正经地胡说"，传统景区导览又无法追问。**徽州问典**用 RAG（检索增强生成）技术构建江淮红色文化专属知识库，让 AI 讲解红色文化**有据可查、有源可溯**；并把讲解延伸到线下——生成研学路线、记录打卡、产出实践报告，服务"青年红色筑梦之旅"与乡村振兴。
+通用大模型讲红色历史容易"一本正经地胡说"，传统景区导览又无法追问。**徽州问典**用 RAG（检索增强生成）技术构建徽州红色文化专属知识库，让 AI 讲解红色文化**有据可查、有源可溯**；并把讲解延伸到线下——生成研学路线、记录打卡、产出实践报告，服务"青年红色筑梦之旅"与乡村振兴。
 
 ## 目录
 
@@ -16,6 +16,7 @@
 - [效果示例](#效果示例)
 - [技术架构](#技术架构)
 - [快速开始](#快速开始)
+- [可选：用 WeKnora 作检索后端](#可选用-weknora-作检索后端)
 - [项目结构](#项目结构)
 - [优化实验](#优化实验)
 - [数据说明](#数据说明)
@@ -27,7 +28,10 @@
 
 提问后不仅给出讲解，还标注每一句回答的原始文献出处，可点击查看原文片段。
 
-- **三档讲解风格**：导游版（生动讲故事）/ 学者版（严谨考据）/ 青少年版（通俗有趣，讲给中学生）
+- **三类人群版本**：研学教师（课堂讲解与研学任务）/ 红色文化游客（现场易懂的故事讲解）/ 基层文旅宣传助手（可复制修改的景点介绍、活动预告与传播文案）
+- **场景快捷入口**：按当前人群展示可直接发起的备课、游览或宣传任务，回答可一键复制
+- **教师备课参数**：设置学生学段、讲解时长和教学目标，输出课堂提纲、互动问题与现场任务
+- **宣传素材模板**：选择景点简介、公众号推文、活动预告、短视频口播、讲解词或海报文案；缺失的活动信息会标为待补充
 - **低置信度拒答**：检索相关度低于阈值时直接拒答，而不是编造——红色主题对事实准确性要求极高
 - **问法自适应**：问"包青天"也能命中写"包拯"的文献（领域词表扩展）
 
@@ -37,17 +41,24 @@
 
 | 环节 | 说明 |
 |---|---|
-| 路线规划 | 大模型编排路线（站点入选理由 + 每站研学任务），高德路径规划计算站间真实交通（步行/驾车、距离、耗时） |
+| 路线规划 | 可指定起点、终点与必经景点；大模型编排入选理由和研学任务，高德路径规划计算站间交通（步行/驾车、距离、耗时） |
 | 任务打卡 | 每站完成研学任务后记录现场心得，实时统计进度 |
 | 实践报告 | 一键生成庄重规范的 Markdown 实践报告：誊录润色心得、统计完成度、撰写实践感悟，可复制/下载 |
 
 ### 3. LBS 融合推荐（文化 + 位置）
 
-提问提到景点时，自动给出周边推荐——游客不仅知道"吃什么、住哪里"，更理解"为什么值得吃、为什么值得住"：
+提问提到景点时，自动出现继续安排探访的入口；用户按需加载周边餐饮或住宿，也可以跳转到该城市生成研学路线：
 
 - 高德地图真实 POI：美食 6 条 / 住宿 4 条，按距离排序，附导航链接与静态地图
 - **每条推荐附文化溯源**：以菜品、地标命名的店铺会命中知识库原文并标注出处
 - 26 处景点注册表覆盖合肥、芜湖、阜阳、淮南、六安、滁州、宣城
+
+### 4. 轻量反馈与原型说明
+
+- 可提交史料纠错线索或功能建议，反馈保存在本机 `data/feedback.json`，不收集姓名、电话等个人信息
+- 页面说明项目为公益演示原型，AI 内容仅供辅助参考，不能替代场馆专业讲解；地图 POI 和导航由高德地图提供
+- 本机维护页可对反馈标记待处理、已核实、已处理或不采纳，并记录处理备注；审核接口拒绝非本机请求
+- 知识片段会保留原始文件路径，并读取 front matter 中明确填写的来源链接、发布机构、日期、适用地点和页码；给已有索引补路径字段可运行 `.venv/bin/python scripts/enrich_kb_metadata.py`，新增 front matter 后需重跑建库脚本。当前原始资料尚未提供可识别的来源 URL、发布机构和页码，补齐前引用卡只显示文件路径
 
 ## 效果示例
 
@@ -85,7 +96,7 @@
                              │
                              ▼
                           生成层
-   DeepSeek API → 多风格 Prompt（导游/学者/青少年）→ 强制引用标注 → 溯源输出
+   DeepSeek API → 人群适配 Prompt（研学教师/游客讲解/宣传助手）→ 强制引用标注 → 溯源输出
                              │
                 ┌────────────┴────────────┐
                 ▼                         ▼
@@ -136,7 +147,59 @@ cp .env.example .env
 
 > 让局域网内其他电脑访问：启动命令加 `--host 0.0.0.0`
 >
-> 前端右上角切换 **💬 文化问答** / **🚩 红色筑梦** 两个页面。
+> 前端右上角切换 **💬 文化问答** / **🚩 红色筑梦**；本机运行者也可打开反馈审核页。首期重点试点为合肥、芜湖、阜阳、淮南，注册表当前覆盖其他安徽城市的部分景点，具体以界面可选范围为准。
+
+## 可选：用 WeKnora 作检索后端
+
+检索层支持整体替换：把 [Tencent/WeKnora](https://github.com/Tencent/WeKnora)（腾讯开源知识平台）当作召回端，**生成仍由本项目自己的 DeepSeek Prompt 负责**——三类人群版本、`[n]` 引用编号、低置信度拒答、LBS 推荐与筑梦之旅全部不变，换掉的只有检索这一环。
+
+```bash
+# 1. 部署 WeKnora（默认监听 http://localhost:8080，需 Docker Desktop 已启动）
+git clone https://github.com/Tencent/WeKnora && cd WeKnora && docker compose up -d
+#    若拉镜像报错，见下方「部署前提」里的镜像加速说明
+#    启动后在 WeKnora 页面创建知识库、上传 data/raw 下的资料，记下知识库 ID（kb-xxxxxxxx）
+
+# 2. 配置本项目
+#    .env          填 WEKNORA_BASE_URL / WEKNORA_API_KEY
+#    config.yaml   填 weknora.knowledge_base_id，并把 retrieval.backend 改为 weknora
+
+# 3. 自检（打印字段映射与分值区间，便于校准阈值）
+.venv/bin/python scripts/check_weknora.py "中共小甸集特支为什么重要？"
+
+# 4. 正常启动，前端与接口完全不变
+.venv/bin/uvicorn app.main:app --port 8000
+```
+
+适配器在 [core/weknora.py](core/weknora.py)，只调用 `POST /api/v1/knowledge-bases/{id}/hybrid-search`（请求 `{"query_text", "match_count"}`），把返回的 `content` / `knowledge_title` / `score` 映射成本项目统一的 hits 形状，因此 `pipeline.py`、`generator.py`、`recommender.py`、`route_planner.py` 与前端都无需改动。
+
+### 部署前提
+
+WeKnora 需要自己配一套「对话模型 + 向量模型」，两者角色不同，缺一不可：
+
+| 模型 | 本项目用的 | 说明 |
+|---|---|---|
+| 对话（KnowledgeQA） | DeepSeek API | 直接复用本项目的 `DEEPSEEK_API_KEY` |
+| 向量（Embedding） | Ollama + `bge-m3` | **DeepSeek 不提供向量模型服务**，需本机跑一个 Ollama（`brew install ollama && ollama pull bge-m3`，约 1.2 GB）；WeKnora 通过 `OLLAMA_BASE_URL=http://host.docker.internal:11434` 访问。选 `bge-m3` 是因为它正是本项目本地后端在用的模型，便于公平对比 |
+
+Docker Hub 在国内直连常不通（表现为 `docker pull` 长时间无响应或 000）。给 Docker Desktop 配上国内镜像加速即可，编辑 `~/.docker/daemon.json` 后重启 Docker Desktop：
+
+```json
+{ "registry-mirrors": ["https://docker.m.daocloud.io", "https://docker.1panel.live"] }
+```
+
+### 实测数据
+
+| 验证项 | 结果 |
+|---|---|
+| 适配器端到端测试 | 18/18 通过（`.venv/bin/python scripts/test_weknora_adapter.py`，内置模拟服务，**无需真机即可跑**） |
+| 本地后端回归 | 改造前后 50 题 Hit@5 / Hit@10 / MRR 完全一致；逐条比对 50 题 × 12 条召回分块，**零差异** |
+| 切换后端后的启动开销 | 13.8 秒 / 1.48 GB → **0.0 秒 / 362 MB**（不再加载本地 bge-m3 与 bge-reranker） |
+
+### 三点提醒
+
+- **分值口径会变。** WeKnora 返回的是 rerank 归一化分，与本地 bge-m3 余弦分不同，切换后需用自检脚本重新校准 `config.yaml` 里的 `weknora.refuse_threshold` 与 `thresholds.*`（周边推荐/路线背景的最低相关度）。
+- **对比实验仍用本地后端。** `retrieval.baseline` 的消融实验依赖对检索链路的完全控制，跑 `scripts/run_eval.py` 时保持 `backend: local`。
+- **官方文档有个坑。** `docs/api/knowledge-search.md` 描述的 `POST /api/v1/knowledge-search` 在当前 main 分支上实际是**文档列表关键词搜索**（`handler.SearchKnowledge` 读的是 URL 上的 `keyword/query` 参数，返回 `has_more/total`），不是向量检索；可用的检索入口是 `POST /api/v1/knowledge-bases/{id}/hybrid-search`。适配器已按源码实现对后者。
 
 ## 项目结构
 
@@ -144,12 +207,13 @@ cp .env.example .env
 huizhou-wendian/
 ├── config.yaml              # 全局配置：模型、检索参数、领域词表、风格 Prompt、景点注册表
 ├── core/                    # RAG 核心链路
-│   ├── loader.py            #   文档加载（txt/md/html/pdf）
+│   ├── loader.py            #   文档加载（txt/md/html/pdf/docx）
 │   ├── chunker.py           #   标题感知 + 滑动窗口分块
 │   ├── embeddings.py        #   bge-m3 向量化
 │   ├── vector_store.py      #   轻量向量库（numpy 余弦 + 持久化）
 │   ├── retriever.py         #   混合检索 + 领域词表扩展（含 baseline 开关）
 │   ├── reranker.py          #   BGE-Reranker 精排
+│   ├── weknora.py           #   可选：WeKnora 检索后端适配器（backend=weknora）
 │   ├── generator.py         #   DeepSeek 生成（引用标注 + 庄重约束 + 拒答）
 │   ├── pipeline.py          #   RAG 总管线
 │   ├── amap.py              #   高德地图客户端（QPS 节流 + 重试）
@@ -162,6 +226,8 @@ huizhou-wendian/
 ├── scripts/
 │   ├── build_kb.py          #   建库脚本（新增资料后重跑即可）
 │   ├── run_eval.py          #   检索优化对比实验
+│   ├── check_weknora.py     #   WeKnora 检索后端连通性自检
+│   ├── test_weknora_adapter.py # 适配器端到端测试（模拟 WeKnora 服务，无需真机）
 │   └── fetch_data.py        #   公开网页资料采集辅助
 ├── eval/
 │   ├── questions.json       #   50 道红色主题评测题

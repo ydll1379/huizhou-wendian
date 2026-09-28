@@ -1,5 +1,6 @@
 """建库脚本：扫描 data/raw 下所有文档 -> 分块 -> Embedding -> 存入 data/kb"""
 import sys
+import re
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -18,14 +19,27 @@ kb_dir = ROOT / cfg["data"]["kb_dir"]
 def main():
     docs = load_directory(raw_dir)
     if not docs:
-        print(f"未在 {raw_dir} 下找到任何文档（支持 .txt/.md/.html/.pdf）")
+        print(f"未在 {raw_dir} 下找到任何文档（支持 .txt/.md/.html/.pdf/.docx）")
         return
 
     print(f"共 {len(docs)} 份文档，开始分块…")
     chunk_cfg = cfg["chunking"]
     chunks = []
     for title, text, path in docs:
-        chunks.extend(chunk_document(title, text, chunk_cfg["max_chars"], chunk_cfg["overlap"]))
+        # Preserve provenance where the source file declares it; legacy files remain valid.
+        metadata = {"source_file": str(path.relative_to(ROOT))}
+        front = re.match(r"\A---\s*\n(.*?)\n---\s*\n", text, re.S)
+        if front:
+            for key, dest in (("source_url", "source_url"), ("publisher", "publisher"),
+                              ("published_at", "published_at"), ("site", "site"), ("page", "page")):
+                match = re.search(rf"(?m)^{key}:\s*['\"]?(.+?)['\"]?\s*$", front.group(1))
+                if match:
+                    metadata[dest] = match.group(1).strip()
+            text = text[front.end():].strip()
+        url = re.search(r"https?://[^\s)]+", text)
+        if url:
+            metadata.setdefault("source_url", url.group(0).rstrip(".,，。"))
+        chunks.extend(chunk_document(title, text, chunk_cfg["max_chars"], chunk_cfg["overlap"], metadata))
 
     print(f"共 {len(chunks)} 个分块，加载 Embedding 模型 {cfg['embedding']['model']} …")
     embedder = Embedder(cfg["embedding"])

@@ -21,18 +21,19 @@ reranker:
   top_k: 5                         # 重排后返回给 LLM 的条数
 
 retrieval:
+  backend: local                   # local = 自研检索（默认）；weknora = 用 WeKnora 作检索后端（见文件末尾）
   top_k: 12                        # 召回阶段取回条数（混合检索融合后）
   baseline: false                  # true = 纯向量检索（做基线对比用），false = 混合检索+词表扩展
   bm25_weight: 0.5
   dense_weight: 0.5
-  refuse_threshold: 0.35           # 最高相关度低于该值则拒答（防幻觉）
+  refuse_threshold: 0.35           # 最高相关度低于该值则拒答（防幻觉；local 后端口径）
 
 chunking:
   max_chars: 500
   overlap: 80
 
 data:
-  raw_dir: data/raw                 # 原始文档目录（支持 .txt/.md/.html/.pdf）
+  raw_dir: data/raw                 # 原始文档目录（支持 .txt/.md/.html/.pdf/.docx）
   kb_dir: data/kb                   # 向量库持久化目录
 
 # 领域词表：别名 -> 规范名（检索时做查询扩展，见 core/retriever.py）
@@ -82,7 +83,7 @@ spots:
   阜阳文峰塔:      { city: 阜阳, aliases: [文峰塔] }
   寿州窑遗址:      { city: 淮南, aliases: [寿州窑, 寿县窑, 上窑镇] }
   侵华日军淮南罪证遗址: { city: 淮南, aliases: [大通万人坑, 万人坑, 大通万人坑教育馆], tag: red }
-  安徽第一面党旗纪念园: { city: 淮南, aliases: [小甸集特支, 党旗纪念园, 小甸集, 寿县革命烈士陵园], tag: red }
+  安徽第一面党旗纪念园: { city: 淮南, aliases: [安徽第一面党旗, 小甸村, 小甸集特支, 党旗纪念园, 小甸集, 寿县革命烈士陵园], tag: red }
   淮南新四军纪念林景区: { city: 淮南, aliases: [新四军纪念林], tag: red }
   板张集革命烈士陵园:  { city: 淮南, aliases: [板张集], tag: red }
   三里沟抗日纪念园:    { city: 淮南, aliases: [三里沟], tag: red }
@@ -105,14 +106,55 @@ spots:
 
 # 多风格讲解 Prompt 模板（{contexts} 为带编号的资料，{question} 为用户问题）
 styles:
+  teacher: |
+    你是面向中小学教师的徽州红色文化与地方文史教学助手。帮助教师把可靠资料转化为
+    可讲、可讨论、可实践的内容。回答优先采用“核心结论—背景脉络—课堂讲解要点—
+    可选提问或研学任务”的清晰结构；根据问题调整长度和学生年龄，不默认堆砌术语。
+    涉及教学设计时，提供可直接使用的讲解提纲、讨论问题或现场任务。严格依据所给资料，
+    对资料未覆盖的事实明确说明，不虚构史实或出处。英烈与革命历史表述庄重准确。
+  tourist: |
+    你是为徽州游客服务的红色文化与地方文史讲解员。用通俗、自然、有画面感的语言，
+    帮助游客理解一处遗址、一段历史与当地生活的联系。先回答问题，再补充一两个有助于
+    现场参观的背景或观察角度；按问题控制长短，避免学术腔和过多术语。严格依据所给资料，
+    不编造史实、开放时间、交通或现场服务信息；资料未覆盖时明确说明。英烈与革命历史
+    表述庄重准确。
+  promo: |
+    你是服务基层文旅单位的红色文化宣传辅助。面向缺少专业制作设备和团队的基层工作者，
+    把可靠资料整理成可直接复制、再按本地实际核对使用的文字内容。根据用户要求生成景点
+    简介、讲解词、活动预告、公众号/短视频文案、海报标题或宣传提纲；没有指定形式时，
+    先给简洁的主文案，再附标题建议。语言清楚、有传播力且庄重，不使用夸张营销承诺，
+    不虚构史实、荣誉、数据、服务、时间和联系方式。严格依据资料；资料不足时标出待核实处，
+    不确定的活动时间、地点等信息用“待补充”占位，不能自行补全。
   guide: |
-    你是"徽州问典"的金牌导游，正在带游客游览江淮大地。请用生动、口语化、
+    你是"徽州问典"的金牌导游，正在带游客游览徽州大地。请用生动、口语化、
     带讲故事感的语言回答游客的问题，可以穿插历史典故和小细节，让听众
     仿佛身临其境。涉及革命历史与英烈人物时保持庄重敬意。控制在 200~400 字。
   scholar: |
-    你是研究江淮地方文化与红色历史特征的学者。请用严谨、考据的语言回答，术语准确，
+    你是研究徽州地方文化与红色历史特征的学者。请用严谨、考据的语言回答，术语准确，
     逻辑清晰，并严格依据所提供的文献资料，不臆造史实。控制在 300~500 字。
   child: |
     你是给中学生讲故事的红色文化讲解员。请用简单、生动、充满画面感的语言
     回答，多用故事和细节，让青少年能听懂、受触动。涉及英烈事迹时保持敬意。
     控制在 150~300 字。
+
+# ---------- 可选：WeKnora 检索后端 ----------
+# retrieval.backend=weknora 时生效：检索层交给 WeKnora（Tencent 开源知识平台），
+# 生成仍由本地 DeepSeek Prompt 负责，三档风格 / [n] 引用编号 / 拒答逻辑全部不变。
+# 部署：git clone https://github.com/Tencent/WeKnora && docker compose up -d（默认 http://localhost:8080）
+weknora:
+  base_url_env: WEKNORA_BASE_URL   # 优先读该环境变量（.env）
+  base_url: http://127.0.0.1:8080  # 环境变量未设置时的兜底地址
+  api_key_env: WEKNORA_API_KEY     # WeKnora 页面「账户信息」获取
+  knowledge_base_id: ""            # 必填：WeKnora 中的目标知识库 ID（形如 kb-xxxxxxxx）
+  timeout: 20
+  resource_urls: handle            # handle = 保持 resource:// 内部引用（本项目不用图片直链）
+  vector_threshold: 0.0            # 透传给 WeKnora 的召回阈值，0 = 用服务端默认
+  keyword_threshold: 0.0
+  refuse_threshold: 0.30           # WeKnora 返回 rerank 归一化分，阈值口径与 local 不同，需实测校准
+  local_rerank: false              # true = 本地再重排一次（默认关闭，WeKnora 已重排）
+
+# 相关度阈值：切换检索后端后分数口径会变，故集中在此便于统一校准
+thresholds:
+  spot_trace_min_score: 0.5        # 周边推荐：单条 POI 的文化溯源最低分
+  spot_intro_min_score: 0.3        # 周边推荐：景点级「文化背景」最低分
+  route_intro_min_score: 0.4       # 研学路线：站点背景资料最低分
