@@ -39,7 +39,7 @@ class RAGPipeline:
 
         # 本地 Reranker：weknora 后端默认跳过（它已重排，且省一份模型内存）
         w_cfg = cfg.get("weknora") or {}
-        if self.backend != "weknora" or w_cfg.get("local_rerank", False):
+        if (self.backend != "weknora" or w_cfg.get("local_rerank", False)) and cfg["reranker"].get("enabled", True):
             self.reranker = Reranker(cfg["reranker"])
 
         self.generator = Generator(cfg)

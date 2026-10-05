@@ -1007,7 +1007,7 @@ async function ask(questionOverride = null, requestOverride = null, isRetry = fa
     duration_minutes: +$id("teacherDuration").value, learning_goal: $id("teacherGoal").value,
     content_format: $id("promoFormat").value };
   try {
-    const res = await fetch("/api/chat", {
+    const res = await fetch("api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(requestBody)
@@ -1130,7 +1130,7 @@ async function loadRec(card, spot, kind) {
   card._loading[kind] = true;
   body.innerHTML = `<div class="rec-loading"><span class="spinner"></span>正在查找${kind === "food" ? "附近餐饮" : "附近住宿"}…</div>`;
   try {
-    const res = await fetch("/api/recommend", {
+    const res = await fetch("api/recommend", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ spot, kind })
@@ -1218,7 +1218,7 @@ document.getElementById("refreshLandmarks").addEventListener("click", () => rend
 /* 景点快捷入口 */
 async function loadSpots() {
   try {
-    const res = await fetch("/api/spots");
+    const res = await fetch("api/spots");
     const spots = await res.json();
     spotCityMap = Object.fromEntries(spots.map(s => [s.name, s.city || ""]));
     redSpotItems = spots.filter(s => s.tag === "red");
@@ -1243,7 +1243,7 @@ $id("navRoute").addEventListener("click", () => showPage("route"));
 $id("navFeedback").addEventListener("click", openAdmin);
 
 async function loadRouteSpots(city) {
-  const spots = await (await fetch("/api/spots")).json();
+  const spots = await (await fetch("api/spots")).json();
   for (const id of ["routeStart", "routeEnd"]) {
     const sel = $id(id), first = sel.options[0]; sel.replaceChildren(first);
     spots.filter(s => s.city === city && s.tag === "red").forEach(s => {
@@ -1311,7 +1311,7 @@ async function loadCities() {
   const sel = $id("citySel");
   if (sel.options.length) return;
   try {
-    const cities = await (await fetch("/api/cities")).json();
+    const cities = await (await fetch("api/cities")).json();
     cities.forEach(c => {
       const o = document.createElement("option");
       o.value = c.city;
@@ -1340,7 +1340,7 @@ $id("genRoute").addEventListener("click", async () => {
   const btn = $id("genRoute");
   btn.disabled = true; btn.textContent = "正在规划路线…";
   try {
-    const d = await (await fetch("/api/routes/generate", {
+    const d = await (await fetch("api/routes/generate", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ city, days: +$id("daysSel").value, start_spot: $id("routeStart").value,
         end_spot: $id("routeEnd").value, via_spots: [...selectedViaSpots] })
@@ -1355,7 +1355,7 @@ $id("genRoute").addEventListener("click", async () => {
 async function loadRouteList() {
   let d;
   try {
-    const res = await fetch("/api/routes");
+    const res = await fetch("api/routes");
     if (!res.ok) throw new Error(`服务返回 ${res.status}`);
     d = await res.json();
   } catch (err) {
@@ -1381,7 +1381,7 @@ let currentRoute = null;
 
 async function openRoute(id) {
   try {
-    const res = await fetch(`/api/routes/${id}`);
+    const res = await fetch(`api/routes/${id}`);
     if (!res.ok) throw new Error(`服务返回 ${res.status}`);
     const d = await res.json();
     if (!d.ok) { notify(d.error); return; }
@@ -1451,7 +1451,7 @@ function renderRoute(r, ck) {
       const done = btn.dataset.done === "1";
       btn.disabled = true;
       try {
-        const res = await fetch("/api/checkin", {
+        const res = await fetch("api/checkin", {
           method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ route_id: currentRoute.id, spot, done, note: input.value.trim() })
         });
@@ -1475,7 +1475,7 @@ async function openAdmin() {
   $id("adminOverlay").style.display = "flex";
   const box = $id("adminList"); box.textContent = "正在读取反馈…";
   try {
-    const res = await fetch("/api/admin/feedback"), data = await res.json();
+    const res = await fetch("api/admin/feedback"), data = await res.json();
     if (!res.ok) throw new Error(data.detail || "读取失败");
     if (!data.items.length) { box.innerHTML = '<div class="hint">暂无反馈记录。</div>'; return; }
     box.innerHTML = data.items.map(item => `<article class="admin-item" data-id="${escapeHtml(item.id)}"><div><b>${item.category === "history" ? "史料纠错" : "功能建议"}</b> · ${escapeHtml(item.submitted_at || "")} · ${escapeHtml(({new:"待处理",verified:"已核实",actioned:"已处理",rejected:"不采纳"})[item.status || "new"] || "待处理")}</div><p>${escapeHtml(item.message)}</p><div class="admin-tools"><select aria-label="审核状态"><option value="new">待处理</option><option value="verified">已核实</option><option value="actioned">已处理</option><option value="rejected">不采纳</option></select><input maxlength="500" placeholder="处理备注" value="${escapeHtml(item.review_note || "")}"><button type="button">保存状态</button><small role="status"></small></div></article>`).join("");
@@ -1485,7 +1485,7 @@ async function openAdmin() {
       el.querySelector("button").addEventListener("click", async () => {
         const status = el.querySelector("small"); status.textContent = "保存中…";
         try {
-          const r = await fetch(`/api/admin/feedback/${encodeURIComponent(item.id)}`, {method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({status:select.value,review_note:el.querySelector("input").value})});
+          const r = await fetch(`api/admin/feedback/${encodeURIComponent(item.id)}`, {method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({status:select.value,review_note:el.querySelector("input").value})});
           const result = await r.json(); if (!r.ok) throw new Error(result.detail || "保存失败");
           status.textContent = "已保存";
         } catch (err) { status.textContent = err.message; }
@@ -1511,7 +1511,7 @@ $id("feedbackForm").addEventListener("submit", async e => {
   if (!message) { status.textContent = "请先填写具体内容。"; status.style.color = "var(--accent)"; return; }
   submit.disabled = true; submit.textContent = "提交中…"; status.textContent = "";
   try {
-    const res = await fetch("/api/feedback", {
+    const res = await fetch("api/feedback", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ category: $id("feedbackCategory").value, message })
     });

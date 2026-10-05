@@ -13,7 +13,14 @@ load_dotenv(ROOT / ".env")
 
 def load_config() -> dict:
     with open(ROOT / "config.yaml", "r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+        cfg = yaml.safe_load(f)
+    # Allow small servers to use a lighter embedding model without changing
+    # the development and evaluation defaults in config.yaml.
+    if model := os.environ.get("WENDIAN_EMBEDDING_MODEL"):
+        cfg["embedding"]["model"] = model
+    if os.environ.get("WENDIAN_DISABLE_RERANKER", "").lower() in {"1", "true", "yes"}:
+        cfg["reranker"]["enabled"] = False
+    return cfg
 
 
 def get_api_key(cfg: dict) -> str:
