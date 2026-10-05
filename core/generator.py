@@ -7,7 +7,7 @@
 import os
 import re
 
-from openai import OpenAI
+from openai import OpenAI, OpenAIError
 
 CITE_RE = re.compile(r"\[(\d+)\]")
 
@@ -22,6 +22,7 @@ def build_context_block(docs: list[dict]) -> str:
 class Generator:
     def __init__(self, cfg: dict):
         self.cfg = cfg["llm"]
+        self.styles = cfg.get("styles", {})
         api_key = os.environ.get(cfg["llm"]["api_key_env"], "")
         if not api_key:
             raise RuntimeError(
@@ -31,7 +32,7 @@ class Generator:
 
     def generate(self, question: str, docs: list[dict], style: str, output_context: str = "") -> dict:
         """返回 {'answer': str, 'citations': [编号列表], 'sources': [docs], 'refused': bool}"""
-        style_prompt = self.cfg.get("styles", {}).get(style, self.cfg.get("styles", {}).get("guide", ""))
+        style_prompt = self.styles.get(style, self.styles.get("guide", ""))
         context = build_context_block(docs)
 
         system = (
@@ -45,15 +46,31 @@ class Generator:
         extra = f"\n\n【输出要求】\n{output_context}" if output_context else ""
         user = f"【背景资料】\n{context}\n\n【问题】\n{question}{extra}"
 
-        resp = self.client.chat.completions.create(
-            model=self.cfg["model"],
-            messages=[
-                {"role": "system", "content": system},
-                {"role": "user", "content": user},
-            ],
-            temperature=self.cfg.get("temperature", 0.3),
-            max_tokens=self.cfg.get("max_tokens", 1024),
-        )
+        try:
+            resp = self.client.chat.completions.create(
+                model=self.cfg["model"],
+                messages=[
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user},
+                ],
+                temperature=self.cfg.get("temperature", 0.3),
+                max_tokens=self.cfg.get("max_tokens", 1024),
+            )
+        except OpenAIError:
+            # Keep a verifiable, clearly labelled retrieval result available
+            # when the remote generation service is unavailable or out of funds.
+            excerpts = docs[:3]
+            answer = "智能讲解服务暂不可用。以下是知识库检索到的原文摘录，可点击编号核对出处：\n\n"
+            answer += "\n\n".join(
+                f"[{i}] 《{doc['doc']}》：{doc['text'][:220]}{'…' if len(doc['text']) > 220 else ''}"
+                for i, doc in enumerate(excerpts, 1)
+            )
+            return {
+                "answer": answer,
+                "citations": list(range(1, len(excerpts) + 1)),
+                "sources": excerpts,
+                "refused": True,
+            }
         answer = resp.choices[0].message.content or ""
 
         citations = sorted({int(n) for n in CITE_RE.findall(answer)})
